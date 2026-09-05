@@ -1,16 +1,18 @@
 /**
  * Reference renderer.
  *
- * This exists to prove the specification is implementable and to give the
- * examples something to draw with. It is deliberately small: a host
- * application is expected to consume the RenderPlan and draw with its own
- * stack, which is why every metric-dependent decision lives here rather than
- * in the plan.
+ * It consumes a RenderPlan and a source PDF, and nothing else. It never sees
+ * a template, a data set, or the reference resolver — which is the point: if
+ * this file needed any of those, the claim that a host application can draw
+ * from a plan with its own stack would not be true.
+ *
+ * Everything here is metric-dependent work: measuring text and applying the
+ * overflow policy the plan asks for.
  */
 
 import { createHash } from "node:crypto";
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
-import type { AnnotationTemplate, Diagnostic, PlacedText, RenderPlan } from "../../spec/types.ts";
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import type { Diagnostic, PlacedText, RenderPlan } from "../../spec/types.ts";
 import { alignedX, baselineOffset, wrapLines, type Rect } from "./layout.ts";
 
 const FONTS: Record<string, (typeof StandardFonts)[keyof typeof StandardFonts]> = {
@@ -21,9 +23,23 @@ const FONTS: Record<string, (typeof StandardFonts)[keyof typeof StandardFonts]> 
   "Times-Roman": StandardFonts.TimesRoman,
 };
 
+/**
+ * Rendering the same plan onto the same PDF twice produces the same bytes.
+ *
+ * PDF writers stamp a modification time on save, which makes otherwise
+ * identical output differ. That defeats caching, byte-diffing two runs, and
+ * golden-file regression tests — all things worth having when the artefact is
+ * a tax return. The filing timestamp belongs to the return data, not to the
+ * document metadata, so the metadata is pinned unless a caller asks for a
+ * real one.
+ */
+const DETERMINISTIC_TIMESTAMP = new Date(Date.UTC(2000, 0, 1));
+
 export interface RenderOptions {
-  /** Refuse to render when the source PDF is not the one the template was measured against. */
+  /** Refuse to draw when the PDF is not the one the plan was measured against. */
   enforceDigest?: boolean;
+  /** Stamped into the output. Defaults to a fixed value, for reproducibility. */
+  timestamp?: Date;
 }
 
 export interface RenderResult {
@@ -36,7 +52,6 @@ export function sha256(bytes: Uint8Array): string {
 }
 
 export async function render(
-  template: AnnotationTemplate,
   plan: RenderPlan,
   sourcePdf: Uint8Array,
   options: RenderOptions = {},
@@ -44,10 +59,10 @@ export async function render(
   const diagnostics: Diagnostic[] = [...plan.diagnostics];
 
   const digest = sha256(sourcePdf);
-  if (digest !== template.template.source.sha256) {
+  if (digest !== plan.source.sha256) {
     const message =
-      `source PDF digest ${digest} does not match the template's ` +
-      `${template.template.source.sha256}; coordinates may no longer be valid`;
+      `source PDF digest ${digest} does not match the plan's ${plan.source.sha256}; ` +
+      "coordinates may no longer be valid";
     if (options.enforceDigest !== false) {
       diagnostics.push({ severity: "error", code: "source/digest-mismatch", message });
       return { pdf: sourcePdf, diagnostics };
@@ -56,6 +71,8 @@ export async function render(
   }
 
   const doc = await PDFDocument.load(sourcePdf);
+  doc.setModificationDate(options.timestamp ?? DETERMINISTIC_TIMESTAMP);
+
   const pages = doc.getPages();
   const fontCache = new Map<string, PDFFont>();
 
@@ -78,66 +95,16 @@ export async function render(
     }
 
     const font = await fontFor(placement.font);
-    const pageHeight = page.getHeight();
-    const style = styleOf(template, placement.fieldId);
-
-    if (placement.cells) {
-      drawComb(page, font, placement, pageHeight);
-      continue;
-    }
-
-    drawText(page, font, placement, pageHeight, style, diagnostics);
+    if (placement.cells) drawComb(page, font, placement, page.getHeight());
+    else drawText(page, font, placement, page.getHeight(), diagnostics);
   }
 
   return { pdf: await doc.save(), diagnostics };
 }
 
-interface ResolvedStyle {
-  vAlign: "top" | "middle" | "bottom";
-  overflow: "error" | "shrink" | "truncate" | "ellipsis" | "wrap";
-  minSize: number;
-  lineHeight: number;
-  padding: { top: number; right: number; bottom: number; left: number };
-}
-
-/**
- * The plan intentionally carries only what is needed to draw a string. The
- * remaining presentation details are read back from the template so that the
- * plan stays a stable, minimal interchange format.
- */
-function styleOf(template: AnnotationTemplate, fieldId: string): ResolvedStyle {
-  const baseId = fieldId.replace(/#cents$/, "").replace(/^.*\.overflow\./, "");
-  const found = findField(template, baseId);
-  const style = { ...template.defaults?.style, ...found?.style };
-
-  // Padding insets a text box. A checkbox is a mark centred in the ruled
-  // square itself, so inherited text padding must not shrink it -- on a 10pt
-  // box, a default 3/4pt inset leaves no room for the glyph at all.
-  const p = found?.type === "checkbox" ? {} : (style.padding ?? {});
-
-  return {
-    vAlign: style.vAlign ?? "middle",
-    overflow: style.overflow ?? "error",
-    minSize: style.minSize ?? 6,
-    lineHeight: style.lineHeight ?? 1.15,
-    padding: { top: p.top ?? 0, right: p.right ?? 0, bottom: p.bottom ?? 0, left: p.left ?? 0 },
-  };
-}
-
-function findField(template: AnnotationTemplate, id: string) {
-  for (const entry of template.entries) {
-    if (entry.kind === "field" && entry.id === id) return entry;
-    if (entry.kind === "repeat") {
-      const hit = entry.row.fields.find((f) => f.id === id || id.endsWith(`.${f.id}`));
-      if (hit) return hit;
-    }
-  }
-  return undefined;
-}
-
-function drawComb(page: any, font: PDFFont, placement: PlacedText, pageHeight: number): void {
-  const [, y, , h] = placement.rect;
-  const baseline = pageHeight - y - baselineOffset(placement.rect as Rect, placement.size, "middle");
+function drawComb(page: PDFPage, font: PDFFont, placement: PlacedText, pageHeight: number): void {
+  const baseline =
+    pageHeight - placement.rect[1] - baselineOffset(placement.rect as Rect, placement.size, "middle");
 
   for (const cell of placement.cells ?? []) {
     if (cell.char === "") continue;
@@ -150,43 +117,47 @@ function drawComb(page: any, font: PDFFont, placement: PlacedText, pageHeight: n
       color: hexToRgb(placement.color),
     });
   }
-  void h;
 }
 
 function drawText(
-  page: any,
+  page: PDFPage,
   font: PDFFont,
   placement: PlacedText,
   pageHeight: number,
-  style: ResolvedStyle,
   diagnostics: Diagnostic[],
 ): void {
   const [x, y, w, h] = placement.rect;
+  const { top, right, bottom, left } = placement.padding;
   const inner: Rect = [
-    x + style.padding.left,
-    y + style.padding.top,
-    Math.max(0, w - style.padding.left - style.padding.right),
-    Math.max(0, h - style.padding.top - style.padding.bottom),
+    x + left,
+    y + top,
+    Math.max(0, w - left - right),
+    Math.max(0, h - top - bottom),
   ];
 
+  const color = hexToRgb(placement.color);
   let text = placement.text;
   let size = placement.size;
-  const measure = (s: string, at = size) => font.widthOfTextAtSize(s, at);
+  const measure = (s: string, at: number = size) => font.widthOfTextAtSize(s, at);
 
-  if (style.overflow === "wrap") {
+  if (placement.overflow === "wrap") {
     const lines = wrapLines(text, inner[2], (s) => measure(s));
     lines.forEach((line, i) => {
-      const lx = alignedX(inner, measure(line), placement.align);
-      const ly = pageHeight - inner[1] - baselineOffset(inner, size, "top") - i * size * style.lineHeight;
-      page.drawText(line, { x: lx, y: ly, size, font, color: hexToRgb(placement.color) });
+      page.drawText(line, {
+        x: alignedX(inner, measure(line), placement.align),
+        y: pageHeight - inner[1] - baselineOffset(inner, size, "top") - i * size * placement.lineHeight,
+        size,
+        font,
+        color,
+      });
     });
     return;
   }
 
   if (measure(text) > inner[2]) {
-    switch (style.overflow) {
+    switch (placement.overflow) {
       case "shrink":
-        while (size > style.minSize && measure(text, size) > inner[2]) size -= 0.25;
+        while (size > placement.minSize && measure(text, size) > inner[2]) size -= 0.25;
         break;
       case "truncate":
         while (text.length > 0 && measure(text) > inner[2]) text = text.slice(0, -1);
@@ -208,10 +179,10 @@ function drawText(
 
   page.drawText(text, {
     x: alignedX(inner, measure(text, size), placement.align),
-    y: pageHeight - inner[1] - baselineOffset(inner, size, style.vAlign),
+    y: pageHeight - inner[1] - baselineOffset(inner, size, placement.vAlign),
     size,
     font,
-    color: hexToRgb(placement.color),
+    color,
   });
 }
 
@@ -222,10 +193,15 @@ function hexToRgb(hex: string) {
 }
 
 /** Renders continuation statements onto appended pages. */
-export async function appendStatements(pdf: Uint8Array, plan: RenderPlan): Promise<Uint8Array> {
+export async function appendStatements(
+  pdf: Uint8Array,
+  plan: RenderPlan,
+  options: RenderOptions = {},
+): Promise<Uint8Array> {
   if (plan.statements.length === 0) return pdf;
 
   const doc = await PDFDocument.load(pdf);
+  doc.setModificationDate(options.timestamp ?? DETERMINISTIC_TIMESTAMP);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 

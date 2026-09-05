@@ -524,22 +524,42 @@ misstated return.
 
 ---
 
-## 11. The implementer's contract
+## 11. The render plan
 
-Resolution and drawing are separate stages. A conforming implementation
-produces a **render plan** first:
+Resolution and drawing are separate stages, and the boundary between them is
+a document in its own right.
+
+```
+template + data  ──resolve──▶  render plan  ──draw──▶  pages
+   (authored)                 (intermediate)          (any stack)
+```
+
+A template is authored by a person. A **render plan** is produced from it.
+The plan is the interchange format, and it is what a host application
+consumes: it can take a plan and draw with its own PDF library, its own
+licensed fonts and its own colour management, without implementing any of
+§5 through §10.
+
+### 11.1 Shape
 
 ```jsonc
 {
+  "planVersion": "1.0.0",
   "templateId": "us.irs.f1040sc.2024",
+  "templateRevision": "2024-12",
+  "taxYear": 2024,
+  "source":   { "filename": "f1040sc.pdf", "sha256": "2d69ea9e…", "pageCount": 1 },
+  "geometry": { "unit": "pt", "origin": "top-left", "pages": [ { "width": 612, "height": 792 } ] },
   "placements": [
     {
       "fieldId": "sc.line1",
       "page": 0,
       "rect": [462, 240, 92, 14],
       "text": "128400",
-      "font": "Helvetica", "size": 9, "color": "#000000", "align": "right",
-      "cells": null
+      "font": "Helvetica", "size": 9, "color": "#000000",
+      "align": "right", "vAlign": "middle",
+      "padding": { "top": 0, "right": 4, "bottom": 0, "left": 3 },
+      "overflow": "error", "minSize": 6, "lineHeight": 1.15
     }
   ],
   "statements": [ /* §10.1 */ ],
@@ -547,20 +567,71 @@ produces a **render plan** first:
 }
 ```
 
-A placement is *"this exact string goes in this box with this alignment"*.
-It contains no font metrics, so it is stable across implementations.
+`spec/render-plan.schema.json` is the normative schema.
 
-This is the seam a host application plugs into. It can take the plan and draw
-with its own PDF stack, its own licensed fonts and its own colour management,
-and ignore the reference renderer entirely — which is the whole point, since
-the annotation and the application that prints it are written by different
-people.
+### 11.2 A plan MUST be self-contained
 
-For comb fields the placement also carries `cells`, each with its own `x`,
-`width` and single character, because cell geometry is derived from the
-template and MUST NOT be re-derived differently downstream.
+Every value needed to draw a placement is present **on the placement**.
+Presentation properties are not optional in a plan: `defaults` (§9.1) are
+already merged, and every property is resolved to a concrete value.
 
----
+This is a hard requirement, not a convenience. A consumer is not required to
+possess the template — that is the entire point of the stage boundary. If a
+consumer had to fall back on a default of its own for an absent property,
+two consumers would disagree about what the absence meant, and the same plan
+would print two different forms.
+
+Two consequences worth stating explicitly:
+
+- `padding` is resolved on all four sides. For a `checkbox` it is always
+  zero, because the rule in §7.3 is a property of the specification and must
+  not be re-derived by each renderer.
+- Comb `cells` are carried with their computed `x` and `width` (§7.1), so
+  cell geometry cannot be recomputed differently downstream.
+
+### 11.3 What a plan deliberately omits
+
+**Font metrics.** Measuring a string depends on the implementation's own
+fonts, so a plan never records a measured width. Instead each placement
+carries the *policy* — `overflow`, `minSize`, `lineHeight` — and the drawing
+stage, which owns the fonts, applies it (§9.3).
+
+That omission is what makes plans comparable. Two independent
+implementations resolving the same template against the same data MUST
+produce the same plan, exactly, which is what lets a conformance suite
+compare them (§11.5).
+
+### 11.4 Versioning
+
+`planVersion` is versioned **independently of `specVersion`**.
+
+The template format and the interchange format change for different reasons
+and are consumed by different people. A new field type or authoring
+convenience may change the specification without changing anything a
+renderer sees. A renderer therefore pins `planVersion`, not `specVersion`,
+and an implementation MUST reject a plan whose major version it does not
+recognise.
+
+### 11.5 Conformance
+
+Because a plan contains no font metrics and no implementation-defined
+defaults, agreement between implementations can be checked exactly.
+
+`conformance/plans/` holds a golden plan for each example template. An
+implementation demonstrates conformance by producing the byte-identical
+plan for the same template and data set. The reference implementation
+asserts this on every test run, so a change to resolution, formatting or
+geometry appears as a reviewable diff rather than as a silently different
+tax form.
+
+### 11.6 Reproducibility
+
+Drawing the same plan onto the same source PDF SHOULD produce identical
+output bytes. PDF writers stamp a modification time on save, which makes
+otherwise identical output differ; an implementation SHOULD pin that
+metadata rather than letting it float, so that two runs can be compared,
+cached and regression-tested. The filing timestamp belongs to the return
+data, not to document metadata.
 
 ## 12. Versioning and source integrity
 
@@ -608,12 +679,14 @@ Codes defined by this version:
 
 | Code | Meaning |
 |------|---------|
-| `schema/invalid` | the document does not satisfy the JSON Schema |
+| `schema/invalid` | the template does not satisfy the template schema |
+| `plan/invalid` | a render plan does not satisfy the plan schema |
 | `reference/syntax` | a reference is outside the grammar of §5.3 |
 | `reference/unresolved` | a reference selects nothing in the sample data |
 | `value/ambiguous` | multi-valued reference with no aggregate |
 | `value/not-numeric` | numeric aggregate over a non-numeric node |
 | `comb/no-room`, `comb/narrow`, `comb/gap-past-end` | comb geometry is unusable |
+| `comb/too-long` | the value has more characters than the comb has cells |
 | `rect/out-of-bounds`, `rect/overlap` | box geometry is wrong or ambiguous |
 | `page/out-of-range` | the page does not exist |
 | `id/duplicate` | two entries share an id |

@@ -2,18 +2,20 @@
 /**
  * Command line entry point.
  *
- *   fixtures                        generate the example blank forms
- *   lint <template...> [--data f]   validate templates, optionally against data
- *   plan <template> --data f        print the resolved render plan as JSON
- *   render <template> --data f --out f.pdf
- *   import <pdf> --id ... --out f.json
- *   stamp <template> [--source f.pdf]  re-record the source PDF's digest
+ *   fixtures [--out dir]                       generate the example blank forms
+ *   lint <template...> [--data f]              validate templates
+ *   plan <template> --data f [--out f]         compile a template to a render plan
+ *   check-plan <plan.json>                     validate a plan against its schema
+ *   render (<template> --data f | --plan f) --out f.pdf
+ *   import <pdf> --id ... --out f.json         draft a template from an AcroForm
+ *   stamp <template> [--source f.pdf]          re-record the source PDF's digest
  */
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AnnotationTemplate, Diagnostic } from "../../spec/types.ts";
+import Ajv2020 from "ajv/dist/2020.js";
+import type { AnnotationTemplate, Diagnostic, RenderPlan } from "../../spec/types.ts";
 import { buildPlan } from "./plan.ts";
 import { lint } from "./lint.ts";
 import { render, appendStatements, sha256 } from "./render.ts";
@@ -22,7 +24,9 @@ import { buildForm1040, buildScheduleC } from "./fixtures.ts";
 import type { Json } from "./reference.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SCHEMA_PATH = resolvePath(HERE, "../../spec/annotation-template.schema.json");
+const TEMPLATE_SCHEMA = resolvePath(HERE, "../../spec/annotation-template.schema.json");
+const PLAN_SCHEMA = resolvePath(HERE, "../../spec/render-plan.schema.json");
+const FIXTURE_DIR = resolvePath(HERE, "../fixtures");
 
 async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, "utf8")) as T;
@@ -36,6 +40,10 @@ async function writeOut(path: string, bytes: Uint8Array | string): Promise<void>
 function flag(args: string[], name: string): string | undefined {
   const i = args.indexOf(`--${name}`);
   return i === -1 ? undefined : args[i + 1];
+}
+
+function has(args: string[], name: string): boolean {
+  return args.includes(`--${name}`);
 }
 
 function positional(args: string[]): string[] {
@@ -59,10 +67,15 @@ function report(label: string, diagnostics: Diagnostic[]): number {
   return errors.length;
 }
 
+/** Example templates and plans are measured against the generated fixtures. */
+function fixturePath(filename: string): string {
+  return resolvePath(FIXTURE_DIR, filename);
+}
+
 // ---------------------------------------------------------------------------
 
 async function cmdFixtures(args: string[]): Promise<number> {
-  const dir = flag(args, "out") ?? resolvePath(HERE, "../fixtures");
+  const dir = flag(args, "out") ?? FIXTURE_DIR;
 
   const forms: [string, Uint8Array][] = [
     ["f1040-p1.pdf", await buildForm1040()],
@@ -70,8 +83,7 @@ async function cmdFixtures(args: string[]): Promise<number> {
   ];
 
   for (const [name, bytes] of forms) {
-    const path = resolvePath(dir, name);
-    await writeOut(path, bytes);
+    await writeOut(resolvePath(dir, name), bytes);
     process.stdout.write(`${name}  ${bytes.length} bytes  sha256 ${sha256(bytes)}\n`);
   }
   return 0;
@@ -83,7 +95,7 @@ async function cmdLint(args: string[]): Promise<number> {
 
   const dataPath = flag(args, "data");
   const data = dataPath ? await readJson<Json>(dataPath) : undefined;
-  const schema = await readJson<unknown>(SCHEMA_PATH);
+  const schema = await readJson<unknown>(TEMPLATE_SCHEMA);
 
   let errors = 0;
   for (const path of templates) {
@@ -104,40 +116,74 @@ async function cmdPlan(args: string[]): Promise<number> {
   const plan = buildPlan(template, data);
 
   const out = flag(args, "out");
-  const json = JSON.stringify(plan, null, 2);
-  if (out) await writeOut(out, json);
-  else process.stdout.write(`${json}\n`);
+  const json = `${JSON.stringify(plan, null, 2)}\n`;
+  if (out) {
+    await writeOut(out, json);
+    process.stdout.write(`\n${plan.templateId} -> ${out}\n`);
+    process.stdout.write(`  ${plan.placements.length} placement(s), ${plan.statements.length} statement(s)\n`);
+  } else {
+    process.stdout.write(json);
+  }
   return plan.diagnostics.some((d) => d.severity === "error") ? 1 : 0;
 }
 
-/** Example templates are measured against the generated fixtures. */
-function defaultSourcePath(templatePath: string, template: AnnotationTemplate): string {
-  return resolvePath(dirname(templatePath), "../tools/fixtures", template.template.source.filename);
+/**
+ * Validates a plan on its own, the way a third-party consumer would before
+ * drawing it. Nothing about the template is consulted.
+ */
+async function cmdCheckPlan(args: string[]): Promise<number> {
+  const paths = positional(args);
+  if (paths.length === 0) throw new Error("check-plan requires at least one plan path");
+
+  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  const validate = ajv.compile(await readJson<object>(PLAN_SCHEMA));
+
+  let failures = 0;
+  for (const path of paths) {
+    const plan = await readJson<RenderPlan>(path);
+    process.stdout.write(`\n${plan.templateId ?? path}  (${path})\n`);
+
+    if (validate(plan)) {
+      process.stdout.write(
+        `  plan v${plan.planVersion}: valid — ${plan.placements.length} placement(s), ` +
+          `${plan.statements.length} statement(s), ${plan.diagnostics.length} diagnostic(s)\n`,
+      );
+    } else {
+      failures += 1;
+      for (const error of validate.errors ?? []) {
+        process.stdout.write(`  error [plan/invalid] ${error.instancePath || "/"}: ${error.message}\n`);
+      }
+    }
+  }
+  return failures === 0 ? 0 : 1;
 }
 
 async function cmdRender(args: string[]): Promise<number> {
-  const [templatePath] = positional(args);
-  const dataPath = flag(args, "data");
   const outPath = flag(args, "out");
-  if (!templatePath || !dataPath || !outPath) {
-    throw new Error("render requires <template> --data <file> --out <file.pdf>");
+  if (!outPath) throw new Error("render requires --out <file.pdf>");
+
+  const planPath = flag(args, "plan");
+  let plan: RenderPlan;
+
+  if (planPath) {
+    // Drawing straight from a serialised plan, with no template in reach.
+    plan = await readJson<RenderPlan>(planPath);
+  } else {
+    const [templatePath] = positional(args);
+    const dataPath = flag(args, "data");
+    if (!templatePath || !dataPath) {
+      throw new Error("render requires <template> --data <file>, or --plan <file.json>");
+    }
+    plan = buildPlan(await readJson<AnnotationTemplate>(templatePath), await readJson<Json>(dataPath));
   }
 
-  const template = await readJson<AnnotationTemplate>(templatePath);
-  const data = await readJson<Json>(dataPath);
-
-  const sourcePath = flag(args, "source") ?? defaultSourcePath(templatePath, template);
+  const sourcePath = flag(args, "source") ?? fixturePath(plan.source.filename);
   const source = new Uint8Array(await readFile(sourcePath));
 
-  const plan = buildPlan(template, data);
-  const result = await render(template, plan, source, {
-    enforceDigest: flag(args, "ignore-digest") === undefined,
-  });
+  const result = await render(plan, source, { enforceDigest: !has(args, "ignore-digest") });
+  await writeOut(outPath, await appendStatements(result.pdf, plan));
 
-  const withStatements = await appendStatements(result.pdf, plan);
-  await writeOut(outPath, withStatements);
-
-  process.stdout.write(`\n${template.template.id} -> ${outPath}\n`);
+  process.stdout.write(`\n${plan.templateId} -> ${outPath}\n`);
   process.stdout.write(`  ${plan.placements.length} placement(s), ${plan.statements.length} statement(s)\n`);
   return report("render", result.diagnostics) === 0 ? 0 : 1;
 }
@@ -160,7 +206,7 @@ async function cmdImport(args: string[]): Promise<number> {
     url: flag(args, "url"),
   });
 
-  await writeOut(outPath, JSON.stringify(template, null, 2));
+  await writeOut(outPath, `${JSON.stringify(template, null, 2)}\n`);
   process.stdout.write(`\n${template.entries.length} field(s) imported -> ${outPath}\n`);
   for (const note of skipped) process.stdout.write(`  warn  ${note}\n`);
   process.stdout.write("  every value.ref is a TODO and must be bound by hand\n");
@@ -170,17 +216,17 @@ async function cmdImport(args: string[]): Promise<number> {
 /**
  * Re-records `source.sha256` after a form has been reissued.
  *
- * This is deliberately a separate, explicit step rather than something the
- * renderer does on its own: accepting a new digest means asserting that the
- * coordinates were re-checked against the new PDF. Stamping without looking
- * at the rendered output defeats the guard entirely.
+ * Deliberately a separate, explicit step rather than something the renderer
+ * does on its own: accepting a new digest means asserting that the
+ * coordinates were re-checked. Stamping without looking at the rendered
+ * output defeats the guard entirely.
  */
 async function cmdStamp(args: string[]): Promise<number> {
   const [templatePath] = positional(args);
   if (!templatePath) throw new Error("stamp requires <template> [--source <file.pdf>]");
 
   const template = await readJson<AnnotationTemplate>(templatePath);
-  const sourcePath = flag(args, "source") ?? defaultSourcePath(templatePath, template);
+  const sourcePath = flag(args, "source") ?? fixturePath(template.template.source.filename);
   const bytes = new Uint8Array(await readFile(sourcePath));
 
   const before = template.template.source.sha256;
@@ -204,6 +250,7 @@ const COMMANDS: Record<string, (args: string[]) => Promise<number>> = {
   fixtures: cmdFixtures,
   lint: cmdLint,
   plan: cmdPlan,
+  "check-plan": cmdCheckPlan,
   render: cmdRender,
   import: cmdImport,
   stamp: cmdStamp,

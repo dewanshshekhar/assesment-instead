@@ -78,7 +78,7 @@ Scroll to the bottom of page 1, then to page 2.
 > a continuation statement. Dropping rows silently is never the default;
 > overflow defaults to a hard error in both directions, for text and for rows.
 
-## 3:20 – 4:20 — Making it hold up over time
+## 3:20 – 4:20 — The seam, and making it hold up
 
 Terminal:
 
@@ -86,7 +86,24 @@ Terminal:
 npm run demo
 ```
 
-> Generate the blank forms, lint the templates, render both. Zero errors.
+> The last three steps are the ones that matter. It compiles the template to
+> a **render plan**, validates that file against its own schema, and then
+> renders the PDF **from the plan alone** — no template, no data set in
+> reach.
+
+Show `out/schedule-c.plan.json`, then a placement in it.
+
+> That is the interchange format. Every placement carries its own resolved
+> font, alignment, padding and overflow policy, so a consumer never needs the
+> template. The one thing it omits is font metrics, because those belong to
+> whoever draws — and that omission is what lets two implementations be
+> compared exactly. `conformance/plans/` holds golden plans and the suite
+> asserts them byte-for-byte.
+>
+> Worth saying out loud: the first version of this got that wrong. The
+> renderer reached back into the template for padding and overflow, which
+> made the whole "print it with your own code" claim false. There is now a
+> test that reads the renderer's source and fails if it mentions templates.
 
 Point at the digest lines.
 
@@ -100,7 +117,7 @@ Point at the digest lines.
 npm test
 ```
 
-> Sixty-one tests. The interesting one asserts that the printed rows plus the
+> Seventy-seven tests. The interesting one asserts that the printed rows plus the
 > carried-over total equal the figure the form reports on line 28 — nothing can
 > be lost in the overflow path.
 
