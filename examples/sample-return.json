@@ -1,0 +1,100 @@
+{
+  "$comment": "A deliberately deep, realistic return. Every reference in the example templates resolves against this document.",
+  "taxReturn": {
+    "taxYear": 2024,
+    "filingStatus": "MARRIED_FILING_JOINTLY",
+    "preparedOn": "2025-03-14",
+    "taxpayer": {
+      "firstName": "Dana R",
+      "lastName": "Whitfield",
+      "fullName": "Dana R Whitfield",
+      "occupation": "Consulting engineer",
+      "identifiers": { "ssn": "412-88-9017" },
+      "address": {
+        "street": "1180 Calder Avenue",
+        "unit": "Apt 4B",
+        "city": "Providence",
+        "state": "RI",
+        "postalCode": "02906"
+      }
+    },
+    "spouse": {
+      "firstName": "Marcus",
+      "lastName": "Whitfield",
+      "identifiers": { "ssn": "409-52-7731" }
+    },
+    "dependents": [
+      { "firstName": "Iris", "lastName": "Whitfield", "relationship": "DAUGHTER", "ssn": "410-77-2266" }
+    ],
+    "income": {
+      "w2": [
+        { "employer": "Halvorsen Systems LLC", "ein": "05-1188342", "wages": 84500.0, "federalWithheld": 9800.0 },
+        { "employer": "Brightwater Analytics Inc", "ein": "22-4471903", "wages": 12750.5, "federalWithheld": 1400.25 }
+      ],
+      "interest": { "taxable": 412.18, "taxExempt": 0 },
+      "dividends": { "ordinary": 1875.0, "qualified": 1610.0 }
+    },
+    "schedules": {
+      "scheduleC": [
+        {
+          "id": "biz-1",
+          "businessName": "Whitfield Structural Consulting",
+          "principalBusiness": "Engineering consulting services",
+          "accountingMethod": "CASH",
+          "materiallyParticipated": true,
+          "identifiers": { "ein": "88-3310542" },
+          "income": {
+            "grossReceipts": 128400.0,
+            "returnsAndAllowances": 2150.0,
+            "netReceipts": 126250.0,
+            "costOfGoodsSold": 0,
+            "grossIncome": 126250.0
+          },
+          "expenses": [
+            { "line": "8", "category": "Advertising", "amount": 4200.0 },
+            { "line": "9", "category": "Car and truck expenses", "amount": 6875.4 },
+            { "line": "11", "category": "Contract labor", "amount": 18500.0 },
+            { "line": "13", "category": "Depreciation and section 179", "amount": 9240.0 },
+            { "line": "15", "category": "Insurance (other than health)", "amount": 3120.75 },
+            { "line": "17", "category": "Legal and professional services", "amount": 5400.0 },
+            { "line": "18", "category": "Office expense", "amount": 2280.15 },
+            { "line": "20a", "category": "Rent — vehicles and equipment", "amount": 1450.0 },
+            { "line": "20b", "category": "Rent — other business property", "amount": 24000.0 },
+            { "line": "21", "category": "Repairs and maintenance", "amount": 1875.6 },
+            { "line": "22", "category": "Supplies", "amount": 3960.25 },
+            { "line": "25", "category": "Utilities", "amount": 4310.9 }
+          ],
+          "totals": { "totalExpenses": 85213.05 },
+          "netProfit": 41036.95
+        },
+        {
+          "id": "biz-2",
+          "businessName": "Calder Avenue Ceramics",
+          "principalBusiness": "Retail — handmade pottery",
+          "accountingMethod": "ACCRUAL",
+          "materiallyParticipated": false,
+          "identifiers": { "ein": "88-7702219" },
+          "income": {
+            "grossReceipts": 9800.0,
+            "returnsAndAllowances": 0,
+            "netReceipts": 9800.0,
+            "costOfGoodsSold": 0,
+            "grossIncome": 9800.0
+          },
+          "expenses": [
+            { "line": "22", "category": "Supplies", "amount": 1200.0 },
+            { "line": "8", "category": "Advertising", "amount": 450.0 },
+            { "line": "25", "category": "Utilities", "amount": 380.0 }
+          ],
+          "totals": { "totalExpenses": 2030.0 },
+          "netProfit": 7770.0
+        }
+      ]
+    },
+    "adjustments": { "selfEmployedRetirement": 3500.0 },
+    "totals": {
+      "totalIncome": 148344.63,
+      "adjustedGrossIncome": 144844.63
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "tfas-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference implementation and authoring tools for the Tax Form Annotation Specification.",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "fixtures": "node --experimental-strip-types src/cli.ts fixtures",
+    "lint": "node --experimental-strip-types src/cli.ts lint ../templates/us.irs.f1040.2024.json ../templates/us.irs.f1040sc.2024.json --data ../examples/sample-return.json",
+    "render": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040.2024.json --data ../examples/sample-return.json --out ../out/f1040-filled.pdf",
+    "render:schedule-c": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040sc.2024.json --data ../examples/sample-return.json --out ../out/schedule-c-filled.pdf",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "demo": "npm run fixtures && npm run lint && npm run render && npm run render:schedule-c"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "pdf-lib": "^1.17.1"
+  }
+}
