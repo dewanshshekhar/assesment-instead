@@ -9,14 +9,16 @@
   },
   "scripts": {
     "fixtures": "node --experimental-strip-types src/cli.ts fixtures",
-    "lint": "node --experimental-strip-types src/cli.ts lint ../templates/us.irs.f1040.2024.json ../templates/us.irs.f1040sc.2024.json --data ../examples/sample-return.json",
+    "lint": "node --experimental-strip-types src/cli.ts lint ../templates/us.irs.f1040.2025.json ../templates/us.irs.f1040.2024.json ../templates/us.irs.f1040sc.2024.json --data ../examples/sample-return.json",
     "plan": "node --experimental-strip-types src/cli.ts plan ../templates/us.irs.f1040sc.2024.json --data ../examples/sample-return.json --out ../out/schedule-c.plan.json",
     "check-plan": "node --experimental-strip-types src/cli.ts check-plan ../out/schedule-c.plan.json",
     "render": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040.2024.json --data ../examples/sample-return.json --out ../out/f1040-filled.pdf",
     "render:from-plan": "node --experimental-strip-types src/cli.ts render --plan ../out/schedule-c.plan.json --out ../out/schedule-c-filled.pdf",
     "conformance:update": "node --experimental-strip-types src/update-conformance.ts",
     "test": "node --experimental-strip-types --test test/*.test.ts",
-    "demo": "npm run fixtures && npm run lint && npm run render && npm run plan && npm run check-plan && npm run render:from-plan"
+    "demo": "npm run fixtures && npm run lint && npm run render:official && npm run render && npm run plan && npm run check-plan && npm run render:from-plan",
+    "render:official": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040.2025.json --data ../examples/sample-return.json --out ../out/f1040-2025-filled.pdf",
+    "inspect": "node --experimental-strip-types src/cli.ts inspect ../templates/us.irs.f1040.2025.json --out ../out/f1040-2025-labelled.pdf"
   },
   "dependencies": {
     "ajv": "^8.20.0",

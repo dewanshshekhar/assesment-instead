@@ -8,10 +8,12 @@
  *   check-plan <plan.json>                     validate a plan against its schema
  *   render (<template> --data f | --plan f) --out f.pdf
  *   import <pdf> --id ... --out f.json         draft a template from an AcroForm
+ *   inspect <template> --out f.pdf             overlay field ids onto the form
  *   stamp <template> [--source f.pdf]          re-record the source PDF's digest
  */
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { dirname, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -26,7 +28,10 @@ import type { Json } from "./reference.ts";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_SCHEMA = resolvePath(HERE, "../../spec/annotation-template.schema.json");
 const PLAN_SCHEMA = resolvePath(HERE, "../../spec/render-plan.schema.json");
+const ROOT = resolvePath(HERE, "../..");
 const FIXTURE_DIR = resolvePath(HERE, "../fixtures");
+/** Official forms live at the repository root; the generated ones under tools/. */
+const SOURCE_DIRS = [resolvePath(ROOT, "forms"), FIXTURE_DIR];
 
 async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, "utf8")) as T;
@@ -67,9 +72,17 @@ function report(label: string, diagnostics: Diagnostic[]): number {
   return errors.length;
 }
 
-/** Example templates and plans are measured against the generated fixtures. */
-function fixturePath(filename: string): string {
-  return resolvePath(FIXTURE_DIR, filename);
+/**
+ * Locates the blank form a template or plan was measured against. The digest
+ * check is what guarantees the right file was found, so searching a couple of
+ * known directories is safe.
+ */
+function findSourcePdf(filename: string): string {
+  for (const dir of SOURCE_DIRS) {
+    const candidate = resolvePath(dir, filename);
+    if (existsSync(candidate)) return candidate;
+  }
+  return resolvePath(SOURCE_DIRS[0], filename);
 }
 
 // ---------------------------------------------------------------------------
@@ -177,7 +190,7 @@ async function cmdRender(args: string[]): Promise<number> {
     plan = buildPlan(await readJson<AnnotationTemplate>(templatePath), await readJson<Json>(dataPath));
   }
 
-  const sourcePath = flag(args, "source") ?? fixturePath(plan.source.filename);
+  const sourcePath = flag(args, "source") ?? findSourcePdf(plan.source.filename);
   const source = new Uint8Array(await readFile(sourcePath));
 
   const result = await render(plan, source, { enforceDigest: !has(args, "ignore-digest") });
@@ -197,7 +210,7 @@ async function cmdImport(args: string[]): Promise<number> {
   }
 
   const bytes = new Uint8Array(await readFile(pdfPath));
-  const { template, skipped } = await importAcroForm(bytes, {
+  const { template, strategy, skipped } = await importAcroForm(bytes, {
     templateId: id,
     title: flag(args, "title") ?? id,
     taxYear: Number(flag(args, "tax-year") ?? new Date().getUTCFullYear()),
@@ -208,7 +221,14 @@ async function cmdImport(args: string[]): Promise<number> {
 
   await writeOut(outPath, `${JSON.stringify(template, null, 2)}\n`);
   process.stdout.write(`\n${template.entries.length} field(s) imported -> ${outPath}\n`);
-  for (const note of skipped) process.stdout.write(`  warn  ${note}\n`);
+  process.stdout.write(`  strategy: ${strategy}\n`);
+  if (strategy === "widgets") {
+    process.stdout.write(
+      "  the catalog's AcroForm was missing; geometry was recovered from orphaned widget annotations\n",
+    );
+  }
+  for (const note of skipped.slice(0, 10)) process.stdout.write(`  warn  ${note}\n`);
+  if (skipped.length > 10) process.stdout.write(`  warn  ...and ${skipped.length - 10} more\n`);
   process.stdout.write("  every value.ref is a TODO and must be bound by hand\n");
   return 0;
 }
@@ -226,7 +246,7 @@ async function cmdStamp(args: string[]): Promise<number> {
   if (!templatePath) throw new Error("stamp requires <template> [--source <file.pdf>]");
 
   const template = await readJson<AnnotationTemplate>(templatePath);
-  const sourcePath = flag(args, "source") ?? fixturePath(template.template.source.filename);
+  const sourcePath = flag(args, "source") ?? findSourcePdf(template.template.source.filename);
   const bytes = new Uint8Array(await readFile(sourcePath));
 
   const before = template.template.source.sha256;
@@ -246,6 +266,47 @@ async function cmdStamp(args: string[]): Promise<number> {
   return 0;
 }
 
+/**
+ * Draws each field's id inside its own box.
+ *
+ * A draft imported from a PDF names its fields the way the PDF does — `f1_16[0]`
+ * says nothing about which line it is. Printing the ids onto the form itself is
+ * the fastest way to bind them: open this next to the blank form and read off
+ * which id sits on which line.
+ */
+async function cmdInspect(args: string[]): Promise<number> {
+  const [templatePath] = positional(args);
+  const outPath = flag(args, "out");
+  if (!templatePath || !outPath) throw new Error("inspect requires <template> --out <file.pdf>");
+
+  const template = await readJson<AnnotationTemplate>(templatePath);
+
+  // Every field becomes a literal label. staticText keeps combs from being
+  // split into cells and keeps checkboxes from printing a mark instead.
+  const overlay: AnnotationTemplate = {
+    ...template,
+    defaults: {
+      style: { font: "Helvetica", size: 5, color: "#cc0022", align: "left", overflow: "shrink", minSize: 3 },
+    },
+    bind: undefined,
+    entries: template.entries.map((entry) =>
+      entry.kind === "field"
+        ? { ...entry, type: "staticText", comb: undefined, cents: undefined, visibleWhen: undefined, value: { const: entry.id } }
+        : entry,
+    ),
+  };
+
+  const plan = buildPlan(overlay, {});
+  const sourcePath = flag(args, "source") ?? findSourcePdf(template.template.source.filename);
+  const source = new Uint8Array(await readFile(sourcePath));
+
+  const result = await render(plan, source, { enforceDigest: false });
+  await writeOut(outPath, result.pdf);
+
+  process.stdout.write(`\n${template.template.id}: ${plan.placements.length} field(s) labelled -> ${outPath}\n`);
+  return 0;
+}
+
 const COMMANDS: Record<string, (args: string[]) => Promise<number>> = {
   fixtures: cmdFixtures,
   lint: cmdLint,
@@ -253,6 +314,7 @@ const COMMANDS: Record<string, (args: string[]) => Promise<number>> = {
   "check-plan": cmdCheckPlan,
   render: cmdRender,
   import: cmdImport,
+  inspect: cmdInspect,
   stamp: cmdStamp,
 };
 

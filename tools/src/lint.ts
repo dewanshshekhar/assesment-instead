@@ -68,11 +68,11 @@ function eachField(template: AnnotationTemplate): FieldRef[] {
     if (entry.kind === "field") {
       out.push({ field: entry, page: entry.page, path: entry.id, inRepeat: false });
     } else {
-      for (const rowField of entry.row.fields) {
+      for (const itemField of entry.item.fields) {
         out.push({
-          field: rowField,
+          field: itemField,
           page: entry.page,
-          path: `${entry.id}.${rowField.id}`,
+          path: `${entry.id}.${itemField.id}`,
           inRepeat: true,
         });
       }
@@ -90,17 +90,17 @@ function checkIdentifiers(template: AnnotationTemplate, out: Diagnostic[]): void
     seen.add(entry.id);
 
     if (entry.kind === "repeat") {
-      const rowIds = new Set<string>();
-      for (const f of entry.row.fields) {
-        if (rowIds.has(f.id)) {
+      const itemIds = new Set<string>();
+      for (const f of entry.item.fields) {
+        if (itemIds.has(f.id)) {
           out.push({
             severity: "error",
             code: "id/duplicate",
             entryId: `${entry.id}.${f.id}`,
-            message: "duplicate field id within a repeat row",
+            message: "duplicate field id within a repeat item",
           });
         }
-        rowIds.add(f.id);
+        itemIds.add(f.id);
       }
     }
   }
@@ -129,12 +129,14 @@ function checkGeometry(template: AnnotationTemplate, out: Diagnostic[]): void {
       assertInside(entry.rect as Rect, page, entry.id, out);
       if (entry.cents) assertInside(entry.cents.rect as Rect, page, `${entry.id}#cents`, out);
     } else {
-      const lastRowTop = entry.origin[1] + (entry.maxRows - 1) * entry.rowHeight;
-      for (const f of entry.row.fields) {
+      // The first and last slots bound every slot between them.
+      const lastX = entry.origin[0] + (entry.capacity - 1) * entry.step[0];
+      const lastY = entry.origin[1] + (entry.capacity - 1) * entry.step[1];
+      for (const f of entry.item.fields) {
         const first: Rect = [f.rect[0] + entry.origin[0], f.rect[1] + entry.origin[1], f.rect[2], f.rect[3]];
-        const last: Rect = [f.rect[0] + entry.origin[0], f.rect[1] + lastRowTop, f.rect[2], f.rect[3]];
-        assertInside(first, page, `${entry.id}.${f.id} (first row)`, out);
-        assertInside(last, page, `${entry.id}.${f.id} (row ${entry.maxRows})`, out);
+        const last: Rect = [f.rect[0] + lastX, f.rect[1] + lastY, f.rect[2], f.rect[3]];
+        assertInside(first, page, `${entry.id}.${f.id} (item 1)`, out);
+        assertInside(last, page, `${entry.id}.${f.id} (item ${entry.capacity})`, out);
       }
     }
   }

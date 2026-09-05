@@ -2,7 +2,7 @@
   "specVersion": "1.0.0",
   "template": {
     "id": "us.irs.f1040sc.2024",
-    "title": "Schedule C (Form 1040) — Profit or Loss From Business",
+    "title": "Schedule C (Form 1040) \u2014 Profit or Loss From Business",
     "taxYear": 2024,
     "revision": "fixture-2024.1",
     "ombNumber": "1545-0074",
@@ -165,7 +165,7 @@
     {
       "kind": "field",
       "id": "sc.method.cash",
-      "label": "F Accounting method — Cash",
+      "label": "F Accounting method \u2014 Cash",
       "page": 0,
       "type": "checkbox",
       "rect": [
@@ -187,7 +187,7 @@
     {
       "kind": "field",
       "id": "sc.method.accrual",
-      "label": "F Accounting method — Accrual",
+      "label": "F Accounting method \u2014 Accrual",
       "page": 0,
       "type": "checkbox",
       "rect": [
@@ -341,21 +341,24 @@
     {
       "kind": "repeat",
       "id": "sc.partII.expenses",
-      "label": "Part II — Expenses",
+      "label": "Part II \u2014 Expenses",
       "page": 0,
       "over": "@.expenses",
       "origin": [
         36,
         360
       ],
-      "rowHeight": 18,
-      "maxRows": 9,
+      "step": [
+        0,
+        18
+      ],
+      "capacity": 9,
       "overflow": "continuation",
       "continuation": {
         "statementId": "stmt.scheduleC.expenses",
-        "title": "Schedule C, Part II — additional expenses"
+        "title": "Schedule C, Part II \u2014 additional expenses"
       },
-      "row": {
+      "item": {
         "fields": [
           {
             "kind": "field",

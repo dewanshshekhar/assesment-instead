@@ -4,9 +4,9 @@ Five minutes, hard cap. The grading is on scope, cleanliness and the quality
 of the walkthrough, so this is structured to demonstrate scope rather than
 narrate the code.
 
-Have open before recording: `SPEC.md`, `templates/us.irs.f1040sc.2024.json`,
-`examples/sample-return.json`, `out/schedule-c-filled.pdf`, and a terminal in
-`tools/`.
+Have open before recording: `SPEC.md`, `templates/us.irs.f1040.2025.json`,
+`examples/sample-return.json`, `out/f1040-2025-filled.pdf`,
+`out/schedule-c-filled.pdf`, and a terminal in `tools/`.
 
 ---
 
@@ -58,25 +58,32 @@ Show `bind.root` on the Schedule C.
 > `@` reference hangs off that. Printing the second business changes one line —
 > there is a test that does precisely that.
 
-## 2:20 – 3:20 — Scope: what real forms actually do
+## 2:20 – 3:20 — On a real form
 
-Show `out/schedule-c-filled.pdf` full screen.
+Show `out/f1040-2025-filled.pdf` full screen — the official 2025 Form 1040.
 
-> SSN and EIN are combs — one character per ruled cell, 3‑2‑4 and 2‑7 grouping.
-> Cell width is derived from the box, so moving the box recomputes nothing.
+> This is the actual IRS form, filled from that data set. I did not type a
+> single coordinate: the importer read them out of the PDF's own form fields.
+
+Point at the SSN row, then the dependents block.
+
+> SSNs are combs — one character per ruled cell, in the 3‑2‑4 grouping the form
+> prints. Cell width is derived from the box, so moving the box recomputes
+> nothing.
 >
-> Accounting method is a radio group; the linter rejects a group where two
-> members could be marked.
+> The dependents block is the one that changed my design. Those four dependents
+> are **columns**, not rows — first name, last name, SSN and relationship run
+> down within one dependent, and successive dependents advance right. My first
+> repeat model had a `rowHeight`, which simply cannot describe that. It is a
+> step **vector** now: Schedule C's expenses are `[0, 18]`, these are `[108, 0]`.
 >
-> And Part II is the interesting one. This taxpayer has twelve expenses. The
-> form has nine lines.
+> This return has five dependents and the form has four columns. Three print,
+> the fourth carries the pointer, and the spilled two come out in full on a
+> continuation statement. On Schedule C the same mechanism collapses the
+> spilled *amounts* into a total, so the form's own arithmetic still
+> reconciles. Dropping entries silently is never the default.
 
-Scroll to the bottom of page 1, then to page 2.
-
-> Eight print, the ninth carries the **total** of everything that spilled — so
-> the form's own arithmetic still reconciles — and the spilled rows come out as
-> a continuation statement. Dropping rows silently is never the default;
-> overflow defaults to a hard error in both directions, for text and for rows.
+Briefly show `out/schedule-c-filled.pdf` page 1 and its statement page.
 
 ## 3:20 – 4:20 — The seam, and making it hold up
 
@@ -117,12 +124,18 @@ Point at the digest lines.
 npm test
 ```
 
-> Seventy-seven tests. The interesting one asserts that the printed rows plus the
+> Ninety tests. The interesting one asserts that the printed rows plus the
 > carried-over total equal the figure the form reports on line 28 — nothing can
 > be lost in the overflow path.
 
-Mention briefly: `import` reads an official fillable PDF's AcroForm and drafts
-the rectangles from the form itself.
+Mention briefly:
+
+> The form I was handed had been through a browser's print-to-PDF, which
+> strips the AcroForm. The widget dictionaries survive though, so the importer
+> falls back to walking those and recovered all 199 fields. And the five
+> filing-status options turned out to share field names — only the appearance
+> state tells them apart — so ids are derived from that, and a test asserts an
+> imported draft never contains a duplicate id.
 
 ## 4:20 – 5:00 — Decisions and what is next
 
@@ -135,15 +148,14 @@ the rectangles from the form itself.
 > Everything fails loudly by default — text that does not fit, rows that do not
 > fit, a digest that does not match.
 >
-> One limitation, stated plainly: the example coordinates are measured against
-> generated fixture forms, not the official IRS PDFs, because I could not fetch
-> them here. So the digests are real and the check genuinely passes, rather
-> than being placeholder numbers.
+> One limitation I will state plainly: the form prints an "if more than four
+> dependents, check here" box that is not a fillable field in this PDF. There
+> was nothing to bind, so I left it out rather than guess a rectangle — an X on
+> the wrong line of a tax return is worse than no X. I know that because
+> `inspect` caught me binding it to the nonresident-alien checkbox.
 >
-> Next: a visual annotate-by-clicking tool, template inheritance across tax
-> years so 2025 only overrides what moved, and a conformance suite — render
-> plans carry no font metrics specifically so two implementations can be
-> compared exactly.
+> Next: a visual annotate-by-clicking tool for exactly that case, and template
+> inheritance across tax years so 2026 only overrides what moved.
 
 ---
 
@@ -154,7 +166,8 @@ the rectangles from the form itself.
   is MeF, which is a different serialisation problem.
 - **Why not just use the PDF's AcroForm directly?** It gives rectangles, not
   meaning. It cannot say which nested value belongs in a box, how to format a
-  loss, or what to do with a twelfth expense. `import` uses it as a starting
-  point, which is the right amount of use.
+  loss, or what to do with a fifth dependent. `import` uses it as a starting
+  point, which is the right amount of use — and on this form it was not even
+  intact.
 - **What breaks first at scale?** Hand-measuring coordinates for flat forms.
   That is why the visual authoring tool is first on the future list.

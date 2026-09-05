@@ -29,6 +29,12 @@ export interface Case {
 
 export const CASES: Case[] = [
   {
+    name: "us.irs.f1040.2025",
+    template: "templates/us.irs.f1040.2025.json",
+    data: "examples/sample-return.json",
+    golden: "conformance/plans/us.irs.f1040.2025.plan.json",
+  },
+  {
     name: "us.irs.f1040.2024",
     template: "templates/us.irs.f1040.2024.json",
     data: "examples/sample-return.json",
@@ -43,6 +49,13 @@ export const CASES: Case[] = [
 ];
 
 export const path = (relative: string): string => resolvePath(ROOT, relative);
+
+/** Look cases up by name; indexes shift whenever a template is added. */
+export function caseNamed(name: string): Case {
+  const found = CASES.find((c) => c.name === name);
+  if (!found) throw new Error(`no conformance case named '${name}'`);
+  return found;
+}
 
 const readJson = async <T,>(relative: string): Promise<T> =>
   JSON.parse(await readFile(path(relative), "utf8")) as T;
