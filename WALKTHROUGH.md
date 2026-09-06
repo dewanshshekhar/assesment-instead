@@ -110,7 +110,14 @@ npm run demo
 > renders the PDF **from the plan alone** — no template, no data set in
 > reach.
 
-Show `out/schedule-c.plan.json`, then a placement in it.
+Show `out/schedule-c.plan.json`, then a placement in it. Then open
+`out/browser-demo.html`.
+
+> And here is the proof rather than the claim. This page is a second
+> implementation — plain JavaScript in a browser, no library, sharing no code
+> with my renderer. It reads that plan and fills the same form: same boxes,
+> same alignment, same comb cells, same overflow policy. It has never heard of
+> a template or a tax form.
 
 > That is the interchange format. Every placement carries its own resolved
 > font, alignment, padding and overflow policy, so a consumer never needs the

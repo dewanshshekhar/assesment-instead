@@ -27,6 +27,7 @@ the schema check needs `ajv`.
 | `src/import.ts` | AcroForm → draft template | `pdf-lib` |
 | `src/fixtures.ts` | generates the example blank forms | `pdf-lib` |
 | `src/update-conformance.ts` | regenerates the golden plans | |
+| `src/browser-demo.ts` | builds a self-contained browser consumer of a plan | |
 | `src/cli.ts` | command line entry point | |
 
 TypeScript runs directly on Node 22.6+ via type stripping; there is no build
@@ -108,6 +109,17 @@ prints each id inside its own box. Open it next to the blank form and read off
 which id belongs to which line. That is how both official templates were bound,
 and it is what caught a checkbox mapped to the wrong line and an EIN comb whose
 cell width was wrong.
+
+## The browser consumer
+
+```bash
+npm run demo:browser     # -> out/browser-demo.html
+```
+
+A self-contained page that fills Schedule C from the render plan with its own
+JavaScript. It is deliberately a *separate implementation*: it imports nothing
+from `src/`, and knows nothing about templates, references or formatting. If a
+change to the plan format breaks it, the plan stopped being self-sufficient.
 
 ## Conformance
 

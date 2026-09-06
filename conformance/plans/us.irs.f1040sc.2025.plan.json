@@ -108,7 +108,7 @@
         11
       ],
       "text": "541330",
-      "font": "Helvetica",
+      "font": "Courier",
       "size": 8,
       "color": "#000000",
       "align": "center",
@@ -121,7 +121,39 @@
       },
       "overflow": "shrink",
       "minSize": 5,
-      "lineHeight": 1.15
+      "lineHeight": 1.15,
+      "cells": [
+        {
+          "x": 460.8,
+          "width": 14.4,
+          "char": "5"
+        },
+        {
+          "x": 475.2,
+          "width": 14.4,
+          "char": "4"
+        },
+        {
+          "x": 489.6,
+          "width": 14.4,
+          "char": "1"
+        },
+        {
+          "x": 504,
+          "width": 14.4,
+          "char": "3"
+        },
+        {
+          "x": 518.4,
+          "width": 14.4,
+          "char": "3"
+        },
+        {
+          "x": 532.8,
+          "width": 14.4,
+          "char": "0"
+        }
+      ]
     },
     {
       "fieldId": "sc.businessName",

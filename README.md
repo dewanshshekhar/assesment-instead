@@ -123,11 +123,24 @@ npm test         # 91 tests
 and Schedule C** in `forms/` from the sample return, then compiles Schedule C to
 `out/schedule-c.plan.json`, validates that file against the plan schema, and
 renders it again **from the plan alone** — the renderer is handed no template
-and no data set.
+and no data set. The last step builds `out/browser-demo.html`.
 
 That Schedule C has eleven other-expenses and nine ruled rows in Part V, so it
 also produces a continuation statement: the last printed row carries the total
 of what spilled, and the spilled rows are listed in full on an appended page.
+
+## Someone else's renderer
+
+`npm run demo:browser` writes `out/browser-demo.html`: a self-contained page
+that fills Schedule C from the render plan using its own ~120 lines of
+JavaScript. It shares no code with anything else here — it reads the plan,
+applies each placement's rectangle, alignment, padding, comb cells and overflow
+policy itself, and draws with the browser's text layout.
+
+That is the specification's central claim made checkable rather than asserted:
+a plan is enough for a third party to build the printing application with their
+own code. Open it with a double-click; there is no server, no network and no
+dependency.
 
 ## Repository map
 
@@ -147,6 +160,8 @@ templates/
   us.irs.f1040.2024.json            a fixture form, for the ruled cents column
 examples/
   sample-return.json                a deeply nested return, internally consistent
+examples/
+  browser/                          a second, independent renderer
 conformance/
   plans/                            golden render plans, asserted byte-for-byte
 tools/                       supporting implementation — see tools/README.md

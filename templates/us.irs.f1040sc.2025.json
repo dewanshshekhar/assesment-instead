@@ -106,7 +106,7 @@
       "id": "sc.businessCode",
       "label": "B Code from instructions  (f1_4[0])",
       "page": 0,
-      "type": "text",
+      "type": "comb",
       "rect": [
         460.8,
         120,
@@ -117,8 +117,14 @@
         "ref": "@.principalBusinessCode"
       },
       "style": {
+        "font": "Courier",
+        "size": 8,
         "align": "center"
-      }
+      },
+      "comb": {
+        "cells": 6
+      },
+      "$comment": "Measured from the form: six uniform 14.4pt cells across the 86.4pt box. The PDF does not flag it as a comb."
     },
     {
       "kind": "field",
