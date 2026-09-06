@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve as resolvePath } from "node:path";
 import { PDFDocument, PDFName, PDFNumber } from "pdf-lib";
@@ -95,4 +96,66 @@ test("leaves every binding as an explicit TODO", async () => {
   for (const entry of template.entries) {
     assert.match((entry as any).value.ref, /^\$\.TODO\./);
   }
+});
+
+// ---------------------------------------------------------------------------
+// The official 2025 Form 1040 in forms/, which arrived with its AcroForm
+// stripped by a browser's print-to-PDF. Everything below is a regression test
+// against a real, imperfect file rather than a synthetic one.
+// ---------------------------------------------------------------------------
+
+const officialForm = async () =>
+  new Uint8Array(await readFile(resolvePath(HERE, "../../forms/f1040-2025.pdf")));
+
+const officialOptions = {
+  templateId: "us.irs.f1040.2025",
+  title: "Form 1040 (2025)",
+  taxYear: 2025,
+  revision: "2025",
+  filename: "f1040-2025.pdf",
+};
+
+test("recovers geometry from a form whose AcroForm was stripped", async () => {
+  const { template, strategy } = await importAcroForm(await officialForm(), officialOptions);
+
+  assert.equal(strategy, "widgets", "the catalog has no AcroForm, so recovery must kick in");
+  assert.equal(template.entries.length, 199);
+  assert.equal(template.template.geometry.pages.length, 2);
+  assert.ok(template.entries.some((e) => e.page === 1), "page 2 fields must be attributed correctly");
+});
+
+test("every recovered field has a usable, in-bounds rectangle", async () => {
+  const { template } = await importAcroForm(await officialForm(), officialOptions);
+
+  for (const entry of template.entries) {
+    const [x, y, w, h] = (entry as any).rect;
+    const page = template.template.geometry.pages[entry.page];
+    assert.ok(w > 0 && h > 0, `${entry.id} has a degenerate rect`);
+    assert.ok(x >= 0 && y >= 0 && x + w <= page.width && y + h <= page.height, `${entry.id} is off the page`);
+  }
+});
+
+test("radio options that share a field name are still given distinct ids", async () => {
+  const { template } = await importAcroForm(await officialForm(), officialOptions);
+
+  const ids = template.entries.map((e) => e.id);
+  assert.equal(new Set(ids).size, ids.length, "an imported draft must never contain duplicate ids");
+
+  // Filing status is one radio group of five options, and two pairs of its
+  // widgets share a /T; only the appearance state tells them apart.
+  const filingStatus = template.entries.filter((e) => e.label?.startsWith("c1_8["));
+  assert.equal(filingStatus.length, 5);
+  assert.deepEqual(
+    filingStatus.map((e) => e.id).sort(),
+    ["c1_8_0_.1", "c1_8_0_.4", "c1_8_1_.2", "c1_8_1_.5", "c1_8_2_.3"],
+  );
+});
+
+test("comb fields are recognised through an inherited flag", async () => {
+  const { template } = await importAcroForm(await officialForm(), officialOptions);
+  const combs = template.entries.filter((e) => (e as any).type === "comb");
+
+  // Taxpayer SSN, spouse SSN and four dependent SSNs on page 1.
+  assert.ok(combs.length >= 6, `expected at least 6 comb fields, found ${combs.length}`);
+  for (const comb of combs) assert.ok((comb as any).comb.cells > 0);
 });

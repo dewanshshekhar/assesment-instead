@@ -37,7 +37,7 @@ step and no transpiler config.
 ```bash
 npm install
 npm run demo      # fixtures, lint, render, compile a plan, check it, draw from it
-npm test          # 77 tests
+npm test          # 90 tests
 ```
 
 Or directly:
@@ -54,7 +54,8 @@ node --experimental-strip-types src/cli.ts <command> [options]
 | `check-plan <plan.json...>` | Validate a plan against `spec/render-plan.schema.json`, the way a consumer would before drawing it |
 | `render <template> --data f --out f.pdf` | Compile and draw in one step |
 | `render --plan f.json --out f.pdf` | Draw from a serialised plan, with no template in reach |
-| `import <pdf> --id <id> --out f.json` | Read a fillable PDF's AcroForm and emit a draft template |
+| `import <pdf> --id <id> --out f.json` | Read a fillable PDF's form fields and emit a draft template |
+| `inspect <template> --out f.pdf` | Print each field's id inside its own box, to check bindings against the paper |
 | `stamp <template> [--source f.pdf]` | Re-record `source.sha256` after a form is reissued |
 
 ## Producing a template for a real form
@@ -79,8 +80,33 @@ node --experimental-strip-types src/cli.ts render \
   --out ../out/check.pdf --source ./f1040.pdf
 ```
 
-`import` needs the PDF to carry an AcroForm. Flat or scanned forms still have
-to be measured by hand.
+### Two import strategies
+
+`import` reports which one it used.
+
+| Strategy | When |
+|----------|------|
+| `acroform` | The catalog's AcroForm is intact. The normal case. |
+| `widgets` | The AcroForm entry is gone but the widget annotations survive. Copies of official forms that have been through a browser's print-to-PDF arrive like this — the catalog entry and the pages' `/Annots` arrays are dropped, leaving the widget dictionaries orphaned but complete, each still naming its page through `/P`. |
+
+The 2025 Form 1040 in `forms/` is a `widgets` case: 199 fields, fully
+recoverable, none of which anyone had to measure.
+
+A truly flat or scanned form still has to be measured by hand.
+
+### Checking the bindings
+
+An imported draft names its fields the way the PDF does. `f1_16[0]` says
+nothing about which line it is, so:
+
+```bash
+node --experimental-strip-types src/cli.ts inspect draft.json \
+  --source ../forms/f1040-2025.pdf --out ../out/labelled.pdf
+```
+
+prints each id inside its own box. Open it next to the blank form and read
+off which id belongs to which line. That is how the 2025 template was bound,
+and it is what caught a checkbox that had been mapped to the wrong line.
 
 ## Conformance
 

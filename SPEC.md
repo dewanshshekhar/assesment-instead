@@ -471,58 +471,80 @@ overflow is resolved at **draw** time, not in the render plan (§11).
 
 ## 10. Repeat groups
 
-A repeat group prints one row per element of a collection.
+A repeat group prints one block of fields per element of a collection.
 
 ```jsonc
 {
   "kind": "repeat",
-  "id": "sc.partII.expenses",
+  "id": "p1.dependents",
   "page": 0,
-  "over": "@.expenses",
-  "origin": [36, 360],
-  "rowHeight": 18,
-  "maxRows": 9,
+  "over": "@.dependents",
+  "origin": [145, 309],
+  "step": [108, 0],
+  "capacity": 4,
   "overflow": "continuation",
   "continuation": {
-    "statementId": "stmt.scheduleC.expenses",
-    "title": "Schedule C, Part II — additional expenses"
+    "statementId": "stmt.f1040.dependents",
+    "title": "Additional dependents"
   },
-  "row": { "fields": [ /* rects relative to the row's top-left corner */ ] }
+  "item": { "fields": [ /* rects relative to the item block's top-left corner */ ] }
 }
 ```
 
 - `over` MUST resolve to an array.
-- Row `n` is drawn at `origin.y + n × rowHeight`. Each row field's `rect` is
-  **relative to the row's top-left corner**, so the row is described once.
-- Inside a row, `@` binds to the **current element**; `$` still reaches the
+- Item *n* is drawn at `origin + n × step`. Each field's `rect` inside `item`
+  is **relative to the item block's top-left corner**, so the block is
+  described once.
+- Inside an item, `@` binds to the **current element**; `$` still reaches the
   document root.
 - Each placement is identified as `<groupId>[<n>].<fieldId>`, so a host
-  application can map every drawn string back to the item it came from.
+  application can map every drawn string back to the element it came from.
 
-### 10.1 More items than rows
+### 10.1 `step` is a vector, not a row height
 
-A return with 12 expenses and a form with 9 lines is normal, not exceptional.
-`overflow` says what to do:
+Forms repeat in both directions, and a specification that assumes rows cannot
+describe half of them.
+
+| Form | Layout | `step` |
+|------|--------|--------|
+| Schedule C, Part II expenses | one expense per line, down the page | `[0, 18]` |
+| Form 1040, dependents | one dependent per column, across the page | `[108, 0]` |
+
+The dependents block on Form 1040 is genuinely column-major: first name, last
+name, SSN and relationship run *down* within one dependent, and successive
+dependents advance *right*. Expressing that needs an advance vector; a scalar
+row height cannot.
+
+`capacity` is likewise named for slots rather than rows, because a slot may be
+a column.
+
+### 10.2 More elements than the form has room for
+
+A return with five dependents and a form with four columns is normal, not
+exceptional. `overflow` says what to do:
 
 | Value | Behaviour |
 |-------|-----------|
 | `error` | **default** — refuse to render and report a diagnostic |
-| `truncate` | print the first `maxRows` and drop the rest |
-| `continuation` | print `maxRows − 1` rows; collapse the remainder into the last row and emit a statement |
+| `truncate` | fill the first `capacity` slots and drop the rest |
+| `continuation` | fill `capacity − 1` slots; collapse the remainder into the last one and emit a statement |
 
 Under `continuation`:
 
-- Numeric columns in the final row carry the **total of the spilled items**,
-  so the form's own arithmetic still reconciles.
-- Text columns in the final row read `See attached: <title>`.
-- A `ContinuationStatement` (§11) is emitted carrying every spilled row in
-  full. Printing it is the host application's business — it may be an
-  appended page, a separate document, or an e-file attachment.
+- Numeric fields in the final slot carry the **total of the spilled
+  elements**, so the form's own arithmetic still reconciles.
+- The **first** text field in the final slot reads `See attached: <title>`.
+  Only the first: an item may hold several text fields — a dependent has a
+  first name, a last name and a relationship — and repeating the pointer in
+  each of them is noise on a form a person has to read.
+- Fields of any other type in the final slot are left blank. A partial
+  identifier in a comb box would be worse than an empty one.
+- A `ContinuationStatement` (§11) is emitted carrying every spilled element in
+  full. Printing it is the host application's business — an appended page, a
+  separate document, or an e-file attachment.
 
-Dropping rows silently is never the default, because a dropped expense is a
-misstated return.
-
----
+Dropping elements silently is never the default, because a dropped dependent
+is a misstated return.
 
 ## 11. The render plan
 

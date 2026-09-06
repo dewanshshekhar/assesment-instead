@@ -255,42 +255,46 @@ function placeRepeat(
   let visible = items;
   let spilled: Json[] = [];
 
-  if (items.length > group.maxRows) {
+  if (items.length > group.capacity) {
     if (overflow === "error") {
       diagnostics.push({
         severity: "error",
         code: "repeat/overflow",
         entryId: group.id,
-        message: `${items.length} items exceed the ${group.maxRows} rows the form provides`,
+        message: `${items.length} items exceed the ${group.capacity} the form provides room for`,
       });
       return;
     }
     if (overflow === "truncate") {
-      visible = items.slice(0, group.maxRows);
+      visible = items.slice(0, group.capacity);
     } else {
-      // Leave the last printed row for the collapsed remainder, which is how
-      // the form itself expects an attached statement to be summarised.
-      visible = items.slice(0, group.maxRows - 1);
-      spilled = items.slice(group.maxRows - 1);
+      // Leave the last slot for the collapsed remainder, which is how the
+      // form itself expects an attached statement to be summarised.
+      visible = items.slice(0, group.capacity - 1);
+      spilled = items.slice(group.capacity - 1);
     }
   }
 
-  visible.forEach((item, rowIndex) => {
-    const dy = group.origin[1] + rowIndex * group.rowHeight;
-    for (const rowField of group.row.fields) {
+  const offsetFor = (index: number): [number, number] => [
+    group.origin[0] + index * group.step[0],
+    group.origin[1] + index * group.step[1],
+  ];
+
+  visible.forEach((item, index) => {
+    for (const itemField of group.item.fields) {
       try {
         placeField(
-          rowField,
+          itemField,
           group.page,
-          [group.origin[0], dy],
+          offsetFor(index),
           template,
           data,
           item,
           out,
-          `${group.id}[${rowIndex}].${rowField.id}`,
+          `${group.id}[${index}].${itemField.id}`,
         );
       } catch (error) {
-        diagnostics.push(toDiagnostic(`${group.id}[${rowIndex}].${rowField.id}`, error));
+        diagnostics.push(toDiagnostic(`${group.id}[${index}].${itemField.id}`, error));
       }
     }
   });
@@ -298,39 +302,51 @@ function placeRepeat(
   if (spilled.length > 0 && group.continuation) {
     statements.push(buildStatement(group, spilled, data, diagnostics));
 
-    const dy = group.origin[1] + visible.length * group.rowHeight;
-    for (const rowField of group.row.fields) {
-      const summary = summariseSpill(rowField, spilled, data, group.continuation.title);
+    const [dx, dy] = offsetFor(visible.length);
+    let pointerPlaced = false;
+
+    for (const itemField of group.item.fields) {
+      const summary = summariseSpill(itemField, spilled, data, group.continuation.title, pointerPlaced);
       if (summary === undefined) continue;
-      const style = resolveStyle(template, rowField);
-      const rect = translate(rowField.rect as Rect, group.origin[0], dy);
-      out.push(place(`${group.id}.overflow.${rowField.id}`, group.page, rect, summary, style));
+      if (isTextual(itemField.type)) pointerPlaced = true;
+      const style = resolveStyle(template, itemField);
+      const rect = translate(itemField.rect as Rect, dx, dy);
+      out.push(place(`${group.id}.overflow.${itemField.id}`, group.page, rect, summary, style));
     }
   }
 }
 
+function isTextual(type: Field["type"]): boolean {
+  return type === "text" || type === "multilineText";
+}
+
 /**
- * The spilled rows still have to be reported. Numeric columns collapse to
- * their total so the form's own arithmetic stays correct; the first text
+ * The spilled entries still have to be reported. Numeric columns collapse to
+ * their total so the form's own arithmetic stays correct, and the first text
  * column carries the pointer to the attachment.
+ *
+ * Only the first: an item may have several text columns — a dependent has a
+ * first name, a last name and a relationship — and repeating "See attached"
+ * in each of them is noise on a form someone has to read.
  */
 function summariseSpill(
-  rowField: Omit<Field, "page">,
+  itemField: Omit<Field, "page">,
   spilled: Json[],
   data: Json,
   title: string,
+  pointerPlaced: boolean,
 ): string | undefined {
-  if (rowField.type === "currency" || rowField.type === "number") {
+  if (itemField.type === "currency" || itemField.type === "number") {
     let total = 0;
     for (const item of spilled) {
-      const evaluation = evaluate(rowField.value as ValueSpec, { root: data, current: item });
+      const evaluation = evaluate(itemField.value as ValueSpec, { root: data, current: item });
       const n = Number(evaluation.value ?? 0);
       if (Number.isFinite(n)) total += n;
     }
-    return formatValue(rowField.type, total, (rowField.format ?? {}) as Format);
+    return formatValue(itemField.type, total, (itemField.format ?? {}) as Format);
   }
-  if (rowField.type === "text" || rowField.type === "multilineText") {
-    return `See attached: ${title}`;
+  if (isTextual(itemField.type)) {
+    return pointerPlaced ? undefined : `See attached: ${title}`;
   }
   return undefined;
 }
@@ -341,9 +357,9 @@ function buildStatement(
   data: Json,
   diagnostics: Diagnostic[],
 ): ContinuationStatement {
-  const columns = group.row.fields.map((f) => f.label ?? f.id);
+  const columns = group.item.fields.map((f) => f.label ?? f.id);
   const rows = spilled.map((item) =>
-    group.row.fields.map((f) => {
+    group.item.fields.map((f) => {
       try {
         const evaluation = evaluate(f.value as ValueSpec, { root: data, current: item });
         return formatValue(f.type, evaluation.value, (f.format ?? {}) as Format);

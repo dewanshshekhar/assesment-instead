@@ -80,7 +80,7 @@ test("the binding filter selects which business the Schedule C prints", () => {
   assert.equal(second.placements.find((p) => p.fieldId === "sc.method.cash"), undefined);
 });
 
-test("prints one row per item and gives every placement a distinct id", () => {
+test("prints one item per element and gives every placement a distinct id", () => {
   const plan = buildPlan(scheduleC, data);
   const ids = plan.placements.map((p) => p.fieldId);
   assert.equal(new Set(ids).size, ids.length, "placement ids must be unique");
@@ -90,7 +90,7 @@ test("prints one row per item and gives every placement a distinct id", () => {
   assert.equal(textOf(plan, "sc.partII.expenses[7].category"), "Rent — vehicles and equipment");
 });
 
-test("collapses the rows that do not fit and reports them on a statement", () => {
+test("collapses the entries that do not fit and reports them on a statement", () => {
   const plan = buildPlan(scheduleC, data);
 
   // The form provides 9 rows for 12 expenses: 8 print, 4 are carried over.
@@ -114,12 +114,70 @@ test("collapses the rows that do not fit and reports them on a statement", () =>
   assert.equal((printed + carried).toFixed(2), "85213.05");
 });
 
-test("reports rather than throws when a row cannot be evaluated", () => {
+test("reports rather than throws when an item cannot be evaluated", () => {
   const broken = structuredClone(scheduleC);
   const repeat = broken.entries.find((e) => e.kind === "repeat") as any;
-  repeat.row.fields[1].value = { ref: "@.category", aggregate: "sum" };
+  repeat.item.fields[1].value = { ref: "@.category", aggregate: "sum" };
 
   const plan = buildPlan(broken, data);
   assert.ok(plan.diagnostics.length > 0);
   assert.ok(plan.diagnostics.every((d) => d.code === "value/not-numeric"));
+});
+
+// ---------------------------------------------------------------------------
+// Form 1040 (2025), annotated against the official PDF.
+// ---------------------------------------------------------------------------
+
+const form2025 = read<AnnotationTemplate>("../../templates/us.irs.f1040.2025.json");
+
+test("a repeat can advance across the page as well as down it", () => {
+  const plan = buildPlan(form2025, data);
+  const group = form2025.entries.find((e) => e.id === "p1.dependents") as any;
+
+  // The four dependents are columns on this form, not rows.
+  assert.deepEqual(group.step, [108, 0]);
+  assert.equal(group.capacity, 4);
+
+  const firstNames = plan.placements.filter((p) => /^p1\.dependents\[\d+\]\.firstName$/.test(p.fieldId));
+  assert.deepEqual(firstNames.map((p) => p.text), ["Iris", "Noel", "Priya"]);
+
+  // Same y, advancing x — the defining property of a horizontal repeat.
+  const ys = new Set(firstNames.map((p) => p.rect[1]));
+  assert.equal(ys.size, 1, "every dependent column starts at the same height");
+  assert.deepEqual(
+    firstNames.map((p) => p.rect[0]),
+    [group.origin[0], group.origin[0] + 108, group.origin[0] + 216],
+  );
+});
+
+test("the continuation pointer is printed once per item, not once per text column", () => {
+  const plan = buildPlan(form2025, data);
+  const pointers = plan.placements.filter((p) => p.fieldId.startsWith("p1.dependents.overflow."));
+
+  // A dependent has three text columns; repeating "See attached" in each is noise.
+  assert.equal(pointers.length, 1);
+  assert.equal(pointers[0].fieldId, "p1.dependents.overflow.firstName");
+  assert.match(pointers[0].text, /^See attached:/);
+});
+
+test("dependents beyond the form's four are carried, never dropped", () => {
+  const plan = buildPlan(form2025, data);
+  const [statement] = plan.statements;
+
+  assert.equal(statement.sourceEntryId, "p1.dependents");
+  assert.equal(statement.rows.length, 2);
+  assert.deepEqual(statement.rows.map((r) => r[0]), ["Adaeze", "Tomas"]);
+
+  const printed = plan.placements.filter((p) => /^p1\.dependents\[\d+\]\.firstName$/.test(p.fieldId)).length;
+  const dependents = (data as any).taxReturn.dependents.length;
+  assert.equal(printed + statement.rows.length, dependents, "no dependent may go unreported");
+});
+
+test("official-form money lines round to whole dollars", () => {
+  const plan = buildPlan(form2025, data);
+
+  assert.equal(textOf(plan, "p1.line1a"), "97251", "97,250.50 rounds half away from zero");
+  assert.equal(textOf(plan, "p1.line9"), "148345");
+  assert.equal(textOf(plan, "p1.line11a"), "144845");
+  assert.equal(textOf(plan, "p1.line2a"), undefined, "a zero amount leaves the line blank");
 });

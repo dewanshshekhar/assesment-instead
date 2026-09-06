@@ -173,9 +173,9 @@
       ]
     },
 
-    "rowField": {
+    "itemField": {
       "type": "object",
-      "description": "A field inside a repeat row. Identical to a field except that `page` is inherited and `rect` is relative to the row origin.",
+      "description": "A field inside a repeat item. Identical to a field except that `page` is inherited and `rect` is relative to the item block origin.",
       "required": ["kind", "id", "type", "rect", "value"],
       "additionalProperties": false,
       "properties": {
@@ -233,7 +233,7 @@
 
     "repeatGroup": {
       "type": "object",
-      "required": ["kind", "id", "page", "over", "origin", "rowHeight", "maxRows", "row"],
+      "required": ["kind", "id", "page", "over", "origin", "step", "capacity", "item"],
       "additionalProperties": false,
       "properties": {
         "$comment": { "type": "string" },
@@ -248,8 +248,14 @@
           "maxItems": 2,
           "items": { "type": "number", "minimum": 0 }
         },
-        "rowHeight": { "type": "number", "exclusiveMinimum": 0 },
-        "maxRows": { "type": "integer", "minimum": 1 },
+        "step": {
+          "type": "array",
+          "description": "[dx, dy] advance between consecutive items, in points. Forms repeat down the page and across it.",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number" }
+        },
+        "capacity": { "type": "integer", "minimum": 1 },
         "overflow": { "enum": ["continuation", "truncate", "error"] },
         "continuation": {
           "type": "object",
@@ -260,7 +266,7 @@
             "title": { "type": "string", "minLength": 1 }
           }
         },
-        "row": {
+        "item": {
           "type": "object",
           "required": ["fields"],
           "additionalProperties": false,
@@ -268,7 +274,7 @@
             "fields": {
               "type": "array",
               "minItems": 1,
-              "items": { "$ref": "#/$defs/rowField" }
+              "items": { "$ref": "#/$defs/itemField" }
             }
           }
         }

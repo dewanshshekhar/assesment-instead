@@ -152,30 +152,37 @@ export interface RepeatGroup {
   id: string;
   label?: string;
   page: number;
-  /** Reference to the array being iterated. MUST resolve to an array. */
+  /** Reference to the collection being iterated. MUST resolve to an array. */
   over: Reference;
-  /** Top-left corner of the first row. */
+  /** Top-left corner of the first item's block. */
   origin: [x: number, y: number];
-  /** Baseline-to-baseline distance between rows, in points. */
-  rowHeight: number;
-  /** Number of printed rows the form physically provides. */
-  maxRows: number;
   /**
-   * What to do when the array is longer than `maxRows`.
-   *  - "continuation": print `maxRows - 1` rows, collapse the remainder into
-   *    the final row, and emit a ContinuationStatement for the host to print.
-   *  - "truncate": print the first `maxRows` and drop the rest.
+   * How far to advance between consecutive items, in points.
+   *
+   * A vector rather than a row height, because real forms repeat in both
+   * directions: Schedule C lists expenses down the page as `[0, 18]`, while
+   * Form 1040 lays its four dependents out across the page as `[108, 0]`.
+   */
+  step: [dx: number, dy: number];
+  /** How many items the form physically provides room for. */
+  capacity: number;
+  /**
+   * What to do when the collection is longer than `capacity`.
+   *  - "continuation": fill `capacity - 1` slots, collapse the remainder into
+   *    the final slot, and emit a ContinuationStatement for the host to print.
+   *  - "truncate": fill the first `capacity` slots and drop the rest.
    *  - "error": refuse to render. The default, because silently dropping
-   *    rows from a tax return is worse than failing loudly.
+   *    entries from a tax return is worse than failing loudly.
    */
   overflow?: "continuation" | "truncate" | "error";
   continuation?: { statementId: string; title: string };
   /**
-   * Fields of a single row. Each `rect` is relative to the row's top-left
-   * corner, so a row definition is written once and reused for every item.
-   * References inside a row resolve against the current item via `@`.
+   * The fields of a single item. Each `rect` is relative to the item block's
+   * top-left corner, so the block is described once and reused for every
+   * element. References inside an item resolve against the current element
+   * via `@`.
    */
-  row: { fields: Omit<Field, "page">[] };
+  item: { fields: Omit<Field, "page">[] };
 }
 
 // ---------------------------------------------------------------------------

@@ -36,10 +36,18 @@ test("catches a box that falls off the page", () => {
   assert.ok(codes(broken).includes("rect/out-of-bounds"));
 });
 
-test("catches a repeat whose last row falls off the page", () => {
+test("catches a repeat whose last slot falls off the page", () => {
   const broken = structuredClone(scheduleC) as any;
   const repeat = broken.entries.find((e: any) => e.kind === "repeat");
-  repeat.maxRows = 40;
+  repeat.capacity = 40;
+  assert.ok(codes(broken).includes("rect/out-of-bounds"));
+});
+
+test("checks the last slot of a horizontal repeat too", () => {
+  const broken = structuredClone(scheduleC) as any;
+  const repeat = broken.entries.find((e: any) => e.kind === "repeat");
+  repeat.step = [200, 0];
+  repeat.capacity = 6;
   assert.ok(codes(broken).includes("rect/out-of-bounds"));
 });
 

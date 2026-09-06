@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import Ajv2020 from "ajv/dist/2020.js";
-import { CASES, path, planFor, readGolden, serialise } from "../src/conformance.ts";
+import { CASES, caseNamed, path, planFor, readGolden, serialise } from "../src/conformance.ts";
 
 const planSchema = JSON.parse(await readFile(path("spec/render-plan.schema.json"), "utf8"));
 const validatePlan = new Ajv2020({ allErrors: true, strict: false }).compile(planSchema);
@@ -65,7 +65,7 @@ for (const testCase of CASES) {
 }
 
 test("checkbox placements carry zero padding, so the glyph keeps its full box", async () => {
-  const plan = await planFor(CASES[0]);
+  const plan = await planFor(caseNamed("us.irs.f1040.2024"));
   const checkboxes = plan.placements.filter((p) => p.fieldId.startsWith("p1.status."));
 
   assert.ok(checkboxes.length > 0);
@@ -75,7 +75,7 @@ test("checkbox placements carry zero padding, so the glyph keeps its full box", 
 });
 
 test("text placements keep the padding the template asked for", async () => {
-  const plan = await planFor(CASES[0]);
+  const plan = await planFor(caseNamed("us.irs.f1040.2024"));
   const line = plan.placements.find((p) => p.fieldId === "p1.line1a");
 
   assert.deepEqual(line?.padding, { top: 0, right: 4, bottom: 0, left: 3 });

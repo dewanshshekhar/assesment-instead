@@ -1,0 +1,731 @@
+{
+  "specVersion": "1.0.0",
+  "template": {
+    "id": "us.irs.f1040.2025",
+    "title": "Form 1040 \u2014 U.S. Individual Income Tax Return (2025), page 1",
+    "taxYear": 2025,
+    "revision": "2025",
+    "ombNumber": "1545-0074",
+    "source": {
+      "filename": "f1040-2025.pdf",
+      "sha256": "759ec26f34de4b5af14d3ab708769046360861634bbda0694f17d544ae31667a",
+      "pageCount": 2
+    },
+    "geometry": {
+      "unit": "pt",
+      "origin": "top-left",
+      "pages": [
+        {
+          "width": 612,
+          "height": 792
+        },
+        {
+          "width": 612,
+          "height": 792
+        }
+      ]
+    }
+  },
+  "defaults": {
+    "style": {
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "left": 3,
+        "right": 4
+      },
+      "overflow": "shrink",
+      "minSize": 6
+    },
+    "format": {
+      "blankIfZero": true
+    }
+  },
+  "$comment": "Coordinates were imported from the official PDF with tools/src/cli.ts import; ids and bindings were assigned by hand. The PDF field name each one came from is kept in `label`.",
+  "bind": {
+    "root": "$.taxReturn"
+  },
+  "entries": [
+    {
+      "kind": "field",
+      "id": "p1.firstName",
+      "label": "Your first name and middle initial  (f1_14[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        94,
+        215.25,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.firstName"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.lastName",
+      "label": "Last name  (f1_15[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        253,
+        94,
+        214.25,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.lastName"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.ssn",
+      "label": "Your social security number  (f1_16[0])",
+      "page": 0,
+      "type": "comb",
+      "rect": [
+        469,
+        94,
+        107,
+        14
+      ],
+      "comb": {
+        "cells": 9
+      },
+      "value": {
+        "ref": "@.taxpayer.identifiers.ssn",
+        "transform": [
+          "digitsOnly"
+        ]
+      },
+      "style": {
+        "font": "Courier",
+        "size": 9,
+        "align": "center"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.spouse.firstName",
+      "label": "Spouse's first name and middle initial  (f1_17[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        118,
+        215.25,
+        14
+      ],
+      "value": {
+        "ref": "@.spouse.firstName"
+      },
+      "visibleWhen": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_JOINTLY"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.spouse.lastName",
+      "label": "Spouse's last name  (f1_18[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        253,
+        118,
+        214.25,
+        14
+      ],
+      "value": {
+        "ref": "@.spouse.lastName"
+      },
+      "visibleWhen": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_JOINTLY"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.spouse.ssn",
+      "label": "Spouse's social security number  (f1_19[0])",
+      "page": 0,
+      "type": "comb",
+      "rect": [
+        469,
+        118,
+        107,
+        14
+      ],
+      "comb": {
+        "cells": 9
+      },
+      "value": {
+        "ref": "@.spouse.identifiers.ssn",
+        "transform": [
+          "digitsOnly"
+        ]
+      },
+      "style": {
+        "font": "Courier",
+        "size": 9,
+        "align": "center"
+      },
+      "visibleWhen": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_JOINTLY"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.address.street",
+      "label": "Home address (number and street)  (f1_20[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        142,
+        380.85,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.street"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.address.apt",
+      "label": "Apt. no.  (f1_21[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        418.6,
+        142,
+        48.65,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.unit"
+      },
+      "visibleWhen": {
+        "ref": "@.taxpayer.address.unit",
+        "exists": true
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.address.city",
+      "label": "City, town, or post office  (f1_22[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        166,
+        294.45,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.city"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.address.state",
+      "label": "State  (f1_23[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        332.2,
+        166,
+        63.05,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.state"
+      },
+      "style": {
+        "align": "center"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.address.zip",
+      "label": "ZIP code  (f1_24[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        397,
+        166,
+        70.25,
+        14
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.postalCode"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.single",
+      "label": "Filing status \u2014 Single  (c1_8[0])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        97.6,
+        206,
+        8,
+        8
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "SINGLE"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.mfj",
+      "label": "Filing status \u2014 Married filing jointly  (c1_8[1])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        97.6,
+        218,
+        8,
+        8
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_JOINTLY"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.mfs",
+      "label": "Filing status \u2014 Married filing separately  (c1_8[2])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        97.6,
+        230,
+        8,
+        8
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_SEPARATELY"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.hoh",
+      "label": "Filing status \u2014 Head of household  (c1_8[0])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        349.6,
+        206,
+        8,
+        8
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "HEAD_OF_HOUSEHOLD"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.qss",
+      "label": "Filing status \u2014 Qualifying surviving spouse  (c1_8[1])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        349.6,
+        218,
+        8,
+        8
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "QUALIFYING_SURVIVING_SPOUSE"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "$comment": "The four dependents run ACROSS the page, one column each, so the repeat's step is horizontal. The form's own 'if more than four dependents, check here' box is not a fillable widget in this PDF, so there is nothing to bind it to; it would have to be measured by hand. The fifth dependent is still reported, on the continuation statement.",
+      "kind": "repeat",
+      "id": "p1.dependents",
+      "label": "Dependents",
+      "page": 0,
+      "over": "@.dependents",
+      "origin": [
+        145,
+        309
+      ],
+      "step": [
+        108,
+        0
+      ],
+      "capacity": 4,
+      "overflow": "continuation",
+      "continuation": {
+        "statementId": "stmt.f1040.dependents",
+        "title": "Additional dependents"
+      },
+      "item": {
+        "fields": [
+          {
+            "kind": "field",
+            "id": "firstName",
+            "label": "(1) First name",
+            "type": "text",
+            "rect": [
+              0,
+              0,
+              106.25,
+              12
+            ],
+            "value": {
+              "ref": "@.firstName"
+            },
+            "style": {
+              "size": 7,
+              "minSize": 4
+            }
+          },
+          {
+            "kind": "field",
+            "id": "lastName",
+            "label": "(2) Last name",
+            "type": "text",
+            "rect": [
+              0,
+              12,
+              106.25,
+              12
+            ],
+            "value": {
+              "ref": "@.lastName"
+            },
+            "style": {
+              "size": 7,
+              "minSize": 4
+            }
+          },
+          {
+            "kind": "field",
+            "id": "ssn",
+            "label": "(3) Social security number",
+            "type": "comb",
+            "rect": [
+              0,
+              24,
+              106.25,
+              12
+            ],
+            "comb": {
+              "cells": 9
+            },
+            "value": {
+              "ref": "@.ssn",
+              "transform": [
+                "digitsOnly"
+              ]
+            },
+            "style": {
+              "font": "Courier",
+              "size": 7,
+              "align": "center"
+            }
+          },
+          {
+            "kind": "field",
+            "id": "relationship",
+            "label": "(4) Relationship to you",
+            "type": "text",
+            "rect": [
+              0,
+              36,
+              106.25,
+              12
+            ],
+            "value": {
+              "ref": "@.relationship"
+            },
+            "style": {
+              "size": 7,
+              "minSize": 4
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line1a",
+      "label": "1a Total amount from Form(s) W-2, box 1  (f1_47[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        450,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.income.w2[*].wages",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line1z",
+      "label": "1z Add lines 1a through 1h  (f1_57[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        558,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.totals.totalWages"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line2a",
+      "label": "2a Tax-exempt interest  (f1_58[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        252,
+        570,
+        71.25,
+        12
+      ],
+      "value": {
+        "ref": "@.income.interest.taxExempt"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line2b",
+      "label": "2b Taxable interest  (f1_59[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        570,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.income.interest.taxable"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line3a",
+      "label": "3a Qualified dividends  (f1_60[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        252,
+        582,
+        71.25,
+        12
+      ],
+      "value": {
+        "ref": "@.income.dividends.qualified"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line3b",
+      "label": "3b Ordinary dividends  (f1_61[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        582,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.income.dividends.ordinary"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line8",
+      "label": "8 Additional income from Schedule 1, line 10  (f1_72[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        714,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.schedules.scheduleC[*].netProfit",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line9",
+      "label": "9 Total income  (f1_73[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        726,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.totals.totalIncome"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line10",
+      "label": "10 Adjustments to income  (f1_74[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        738,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.adjustments.selfEmployedRetirement"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line11a",
+      "label": "11a Adjusted gross income  (f1_75[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        504,
+        750,
+        72,
+        12
+      ],
+      "value": {
+        "ref": "@.totals.adjustedGrossIncome"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    }
+  ]
+}

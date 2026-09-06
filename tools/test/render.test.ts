@@ -2,10 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import type { RenderPlan } from "../../spec/types.ts";
-import { CASES, path, planFor } from "../src/conformance.ts";
+import { caseNamed, path, planFor } from "../src/conformance.ts";
 import { render, appendStatements, sha256 } from "../src/render.ts";
 
-const scheduleC = CASES[1];
+const scheduleC = caseNamed("us.irs.f1040sc.2024");
 const sourcePdf = async () =>
   new Uint8Array(await readFile(path("tools/fixtures/schedule-c.pdf")));
 
