@@ -1,0 +1,1350 @@
+{
+  "planVersion": "1.0.0",
+  "templateId": "us.irs.f1040sc.2025",
+  "templateRevision": "2025",
+  "taxYear": 2025,
+  "source": {
+    "filename": "f1040sc-2025.pdf",
+    "sha256": "0bfce1b8ec5e87c7fe235db4e15a845f599753ca7dce280115b4195f3cbe2380",
+    "pageCount": 2
+  },
+  "geometry": {
+    "unit": "pt",
+    "origin": "top-left",
+    "pages": [
+      {
+        "width": 612,
+        "height": 792
+      },
+      {
+        "width": 612,
+        "height": 792
+      }
+    ]
+  },
+  "placements": [
+    {
+      "fieldId": "sc.proprietor",
+      "page": 0,
+      "rect": [
+        36,
+        94,
+        409.65,
+        14
+      ],
+      "text": "Dana R Whitfield",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.ssn",
+      "page": 0,
+      "rect": [
+        446.4,
+        94,
+        129.6,
+        13
+      ],
+      "text": "412-88-9017",
+      "font": "Courier",
+      "size": 8,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.principalBusiness",
+      "page": 0,
+      "rect": [
+        36,
+        118,
+        408.4,
+        14
+      ],
+      "text": "Engineering consulting services",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.businessCode",
+      "page": 0,
+      "rect": [
+        460.8,
+        120,
+        86.4,
+        11
+      ],
+      "text": "541330",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.businessName",
+      "page": 0,
+      "rect": [
+        36,
+        142,
+        409.65,
+        14
+      ],
+      "text": "Whitfield Structural Consulting",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.ein",
+      "page": 0,
+      "rect": [
+        446.4,
+        142,
+        129.6,
+        14
+      ],
+      "text": "883310542",
+      "font": "Courier",
+      "size": 8,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15,
+      "cells": [
+        {
+          "x": 446.4,
+          "width": 14.399999999999999,
+          "char": "8"
+        },
+        {
+          "x": 460.79999999999995,
+          "width": 14.399999999999999,
+          "char": "8"
+        },
+        {
+          "x": 475.2,
+          "width": 14.399999999999999,
+          "char": "3"
+        },
+        {
+          "x": 489.59999999999997,
+          "width": 14.399999999999999,
+          "char": "3"
+        },
+        {
+          "x": 504,
+          "width": 14.399999999999999,
+          "char": "1"
+        },
+        {
+          "x": 518.4,
+          "width": 14.399999999999999,
+          "char": "0"
+        },
+        {
+          "x": 532.8,
+          "width": 14.399999999999999,
+          "char": "5"
+        },
+        {
+          "x": 547.1999999999999,
+          "width": 14.399999999999999,
+          "char": "4"
+        },
+        {
+          "x": 561.5999999999999,
+          "width": 14.399999999999999,
+          "char": "2"
+        }
+      ]
+    },
+    {
+      "fieldId": "sc.address",
+      "page": 0,
+      "rect": [
+        230.4,
+        156,
+        345.6,
+        12
+      ],
+      "text": "1180 Calder Avenue",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.cityStateZip",
+      "page": 0,
+      "rect": [
+        230.4,
+        168,
+        345.6,
+        12
+      ],
+      "text": "Providence, RI 02906",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.method.cash",
+      "page": 0,
+      "rect": [
+        168.8,
+        183,
+        8,
+        8
+      ],
+      "text": "X",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.materiallyParticipated.yes",
+      "page": 0,
+      "rect": [
+        514.4,
+        194,
+        8,
+        8
+      ],
+      "text": "X",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line1",
+      "page": 0,
+      "rect": [
+        475.2,
+        264,
+        100.8,
+        12
+      ],
+      "text": "128400",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line2",
+      "page": 0,
+      "rect": [
+        475.2,
+        276,
+        100.8,
+        12
+      ],
+      "text": "2150",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line3",
+      "page": 0,
+      "rect": [
+        475.2,
+        288,
+        100.8,
+        12
+      ],
+      "text": "126250",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line5",
+      "page": 0,
+      "rect": [
+        475.2,
+        312,
+        100.8,
+        12
+      ],
+      "text": "126250",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line7",
+      "page": 0,
+      "rect": [
+        475.2,
+        336,
+        100.8,
+        12
+      ],
+      "text": "126250",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line8",
+      "page": 0,
+      "rect": [
+        194.4,
+        360,
+        100.05,
+        12
+      ],
+      "text": "4200",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line9",
+      "page": 0,
+      "rect": [
+        194.4,
+        384,
+        100.05,
+        12
+      ],
+      "text": "6875",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line11",
+      "page": 0,
+      "rect": [
+        194.4,
+        408,
+        100.05,
+        12
+      ],
+      "text": "18500",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line13",
+      "page": 0,
+      "rect": [
+        194.4,
+        456,
+        100.05,
+        12
+      ],
+      "text": "9240",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line15",
+      "page": 0,
+      "rect": [
+        194.4,
+        492,
+        100.05,
+        12
+      ],
+      "text": "3121",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line17",
+      "page": 0,
+      "rect": [
+        194.4,
+        540,
+        100.05,
+        12
+      ],
+      "text": "5400",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line18",
+      "page": 0,
+      "rect": [
+        475.2,
+        360,
+        100.8,
+        12
+      ],
+      "text": "2280",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line20a",
+      "page": 0,
+      "rect": [
+        475.2,
+        396,
+        100.8,
+        12
+      ],
+      "text": "1450",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line20b",
+      "page": 0,
+      "rect": [
+        475.2,
+        408,
+        100.8,
+        12
+      ],
+      "text": "24000",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line21",
+      "page": 0,
+      "rect": [
+        475.2,
+        420,
+        100.8,
+        12
+      ],
+      "text": "1876",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line22",
+      "page": 0,
+      "rect": [
+        475.2,
+        432,
+        100.8,
+        12
+      ],
+      "text": "3960",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line25",
+      "page": 0,
+      "rect": [
+        475.2,
+        492,
+        100.8,
+        12
+      ],
+      "text": "4311",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line27b",
+      "page": 0,
+      "rect": [
+        475.2,
+        540,
+        100.8,
+        12
+      ],
+      "text": "10120",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line28",
+      "page": 0,
+      "rect": [
+        475.2,
+        552,
+        100.8,
+        12
+      ],
+      "text": "95333",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line29",
+      "page": 0,
+      "rect": [
+        475.2,
+        564,
+        100.8,
+        12
+      ],
+      "text": "30917",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line31",
+      "page": 0,
+      "rect": [
+        475.2,
+        660,
+        100.8,
+        12
+      ],
+      "text": "30917",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[0].description",
+      "page": 1,
+      "rect": [
+        36,
+        540,
+        424.8,
+        12
+      ],
+      "text": "Bank and merchant service fees",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[0].amount",
+      "page": 1,
+      "rect": [
+        468,
+        540,
+        108,
+        12
+      ],
+      "text": "640",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[1].description",
+      "page": 1,
+      "rect": [
+        36,
+        564,
+        424.8,
+        12
+      ],
+      "text": "Engineering software subscriptions",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[1].amount",
+      "page": 1,
+      "rect": [
+        468,
+        564,
+        108,
+        12
+      ],
+      "text": "3180",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[2].description",
+      "page": 1,
+      "rect": [
+        36,
+        588,
+        424.8,
+        12
+      ],
+      "text": "Professional association dues",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[2].amount",
+      "page": 1,
+      "rect": [
+        468,
+        588,
+        108,
+        12
+      ],
+      "text": "450",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[3].description",
+      "page": 1,
+      "rect": [
+        36,
+        612,
+        424.8,
+        12
+      ],
+      "text": "Continuing education and seminars",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[3].amount",
+      "page": 1,
+      "rect": [
+        468,
+        612,
+        108,
+        12
+      ],
+      "text": "1250",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[4].description",
+      "page": 1,
+      "rect": [
+        36,
+        636,
+        424.8,
+        12
+      ],
+      "text": "Postage and courier",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[4].amount",
+      "page": 1,
+      "rect": [
+        468,
+        636,
+        108,
+        12
+      ],
+      "text": "318",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[5].description",
+      "page": 1,
+      "rect": [
+        36,
+        660,
+        424.8,
+        12
+      ],
+      "text": "Reference standards and codes",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[5].amount",
+      "page": 1,
+      "rect": [
+        468,
+        660,
+        108,
+        12
+      ],
+      "text": "875",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[6].description",
+      "page": 1,
+      "rect": [
+        36,
+        684,
+        424.8,
+        12
+      ],
+      "text": "Website hosting and domains",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[6].amount",
+      "page": 1,
+      "rect": [
+        468,
+        684,
+        108,
+        12
+      ],
+      "text": "289",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[7].description",
+      "page": 1,
+      "rect": [
+        36,
+        708,
+        424.8,
+        12
+      ],
+      "text": "Business gifts",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses[7].amount",
+      "page": 1,
+      "rect": [
+        468,
+        708,
+        108,
+        12
+      ],
+      "text": "175",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses.overflow.description",
+      "page": 1,
+      "rect": [
+        36,
+        732,
+        424.8,
+        12
+      ],
+      "text": "See attached: Schedule C, Part V — additional other expenses",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.partV.otherExpenses.overflow.amount",
+      "page": 1,
+      "rect": [
+        468,
+        732,
+        108,
+        12
+      ],
+      "text": "2942",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "sc.line48",
+      "page": 1,
+      "rect": [
+        468,
+        744,
+        108,
+        12
+      ],
+      "text": "10120",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 5,
+      "lineHeight": 1.15
+    }
+  ],
+  "statements": [
+    {
+      "statementId": "stmt.scheduleC.otherExpenses",
+      "title": "Schedule C, Part V — additional other expenses",
+      "sourceEntryId": "sc.partV.otherExpenses",
+      "columns": [
+        "Description",
+        "Amount"
+      ],
+      "rows": [
+        [
+          "Field equipment calibration",
+          "540"
+        ],
+        [
+          "Printing and reprographics",
+          "962"
+        ],
+        [
+          "Telephone and internet",
+          "1440"
+        ]
+      ]
+    }
+  ],
+  "diagnostics": []
+}

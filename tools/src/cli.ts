@@ -22,7 +22,7 @@ import { buildPlan } from "./plan.ts";
 import { lint } from "./lint.ts";
 import { render, appendStatements, sha256 } from "./render.ts";
 import { importAcroForm } from "./import.ts";
-import { buildForm1040, buildScheduleC } from "./fixtures.ts";
+import { buildForm1040 } from "./fixtures.ts";
 import type { Json } from "./reference.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -90,10 +90,7 @@ function findSourcePdf(filename: string): string {
 async function cmdFixtures(args: string[]): Promise<number> {
   const dir = flag(args, "out") ?? FIXTURE_DIR;
 
-  const forms: [string, Uint8Array][] = [
-    ["f1040-p1.pdf", await buildForm1040()],
-    ["schedule-c.pdf", await buildScheduleC()],
-  ];
+  const forms: [string, Uint8Array][] = [["f1040-p1.pdf", await buildForm1040()]];
 
   for (const [name, bytes] of forms) {
     await writeOut(resolvePath(dir, name), bytes);

@@ -5,9 +5,12 @@ import type { RenderPlan } from "../../spec/types.ts";
 import { caseNamed, path, planFor } from "../src/conformance.ts";
 import { render, appendStatements, sha256 } from "../src/render.ts";
 
-const scheduleC = caseNamed("us.irs.f1040sc.2024");
+const scheduleC = caseNamed("us.irs.f1040sc.2025");
 const sourcePdf = async () =>
-  new Uint8Array(await readFile(path("tools/fixtures/schedule-c.pdf")));
+  new Uint8Array(await readFile(path("forms/f1040sc-2025.pdf")));
+
+/** A different form, for checking that the digest guard actually bites. */
+const otherPdf = async () => new Uint8Array(await readFile(path("forms/f1040-2025.pdf")));
 
 /** What a third-party consumer actually receives: JSON, not an object graph. */
 const roundTrip = (plan: RenderPlan): RenderPlan => JSON.parse(JSON.stringify(plan));
@@ -43,7 +46,7 @@ test("rendering the same plan twice is byte-reproducible", async () => {
 
 test("refuses to draw onto a PDF the plan was not measured against", async () => {
   const plan = await planFor(scheduleC);
-  const wrongForm = new Uint8Array(await readFile(path("tools/fixtures/f1040-p1.pdf")));
+  const wrongForm = await otherPdf();
 
   const result = await render(plan, wrongForm);
   const mismatch = result.diagnostics.find((d) => d.code === "source/digest-mismatch");
@@ -56,7 +59,7 @@ test("refuses to draw onto a PDF the plan was not measured against", async () =>
 
 test("a mismatch can be downgraded to a warning, but never passes silently", async () => {
   const plan = await planFor(scheduleC);
-  const wrongForm = new Uint8Array(await readFile(path("tools/fixtures/f1040-p1.pdf")));
+  const wrongForm = await otherPdf();
 
   const result = await render(plan, wrongForm, { enforceDigest: false });
   const mismatch = result.diagnostics.find((d) => d.code === "source/digest-mismatch");

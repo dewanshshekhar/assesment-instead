@@ -35,19 +35,18 @@ export const CASES: Case[] = [
     golden: "conformance/plans/us.irs.f1040.2025.plan.json",
   },
   {
+    name: "us.irs.f1040sc.2025",
+    template: "templates/us.irs.f1040sc.2025.json",
+    data: "examples/sample-return.json",
+    golden: "conformance/plans/us.irs.f1040sc.2025.plan.json",
+  },
+  {
     name: "us.irs.f1040.2024",
     template: "templates/us.irs.f1040.2024.json",
     data: "examples/sample-return.json",
     golden: "conformance/plans/us.irs.f1040.2024.plan.json",
   },
-  {
-    name: "us.irs.f1040sc.2024",
-    template: "templates/us.irs.f1040sc.2024.json",
-    data: "examples/sample-return.json",
-    golden: "conformance/plans/us.irs.f1040sc.2024.plan.json",
-  },
 ];
-
 export const path = (relative: string): string => resolvePath(ROOT, relative);
 
 /** Look cases up by name; indexes shift whenever a template is added. */

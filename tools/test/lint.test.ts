@@ -13,13 +13,15 @@ const read = <T,>(p: string): T => JSON.parse(readFileSync(resolvePath(HERE, p),
 const schema = read<unknown>("../../spec/annotation-template.schema.json");
 const data = read<Json>("../../examples/sample-return.json");
 const base = read<AnnotationTemplate>("../../templates/us.irs.f1040.2024.json");
-const scheduleC = read<AnnotationTemplate>("../../templates/us.irs.f1040sc.2024.json");
+const scheduleC = read<AnnotationTemplate>("../../templates/us.irs.f1040sc.2025.json");
 
 const codes = (template: AnnotationTemplate, withData = false) =>
   lint(template, { schema, data: withData ? data : undefined }).map((d) => d.code);
 
+const form2025 = read<AnnotationTemplate>("../../templates/us.irs.f1040.2025.json");
+
 test("the shipped templates are clean against the schema and the sample data", () => {
-  for (const template of [base, scheduleC]) {
+  for (const template of [form2025, scheduleC, base]) {
     assert.deepEqual(lint(template, { schema, data }), [], `${template.template.id} is not clean`);
   }
 });

@@ -55,6 +55,14 @@ concession, and it only restates a total the data already contains.
 **Cost:** anything genuinely computed must exist in the data set first. That
 is the intended pressure — it pushes tax logic into the engine that owns it.
 
+Annotating the official Schedule C produced a concrete vindication. Part V of
+the worked example prints eight rounded rows plus a rounded carry-over; adding
+those printed figures gives 10,119, while line 48 reads 10,120. Line 48 is
+right — the IRS rule is to add the unrounded amounts and round only the total.
+A template that computed its own totals would have printed 10,119 on a filed
+return. There is a test asserting exactly this discrepancy so it cannot be
+"fixed" by someone who mistakes it for a bug.
+
 ### 1.5 JSON Pointer as canonical, JSONPath-lite as sugar
 
 Pointer is a published standard, unambiguous, and implementable in a dozen
@@ -200,7 +208,31 @@ An importer that keyed on the name alone would emit a draft that fails the
 specification's own duplicate-id rule. So the on-state disambiguates, a
 positional suffix is the last resort, and uniqueness is asserted in the tests.
 
-### 1.17 `additionalProperties: false` everywhere
+### 1.17 The unresolved-reference check ignores multi-valued references
+
+The linter warns when a reference selects nothing in the sample data. Binding
+the official Schedule C turned that into noise: a complete template binds all
+twenty-four named expense lines, and any one taxpayer uses a handful of them,
+so eleven lines legitimately matched nothing.
+
+The check exists to catch a mistyped path, not to report that a line is empty.
+A wildcard or filter is *expected* to match nothing for some returns, so the
+warning now fires only for single-valued references, where an empty result
+really does suggest the path is wrong.
+
+### 1.18 The fixture Schedule C was retired once the official one landed
+
+It had modelled Part II as a repeating list. The real Schedule C names each of
+its twenty-four expense lines individually; the only repeating region is Part V,
+"Other Expenses". Keeping a template for a form that does not exist — and whose
+totals no longer reconciled against the extended sample return — would have
+been worse than deleting it.
+
+The fixture Form 1040 stays, for one reason: neither official 2025 form rules
+dollars and cents into separate columns, and that feature needs a form to
+demonstrate it on.
+
+### 1.19 `additionalProperties: false` everywhere
 
 A misspelled `alignment` is a silent no-op in a permissive schema and a
 caught error in a strict one. Strictness now is what makes it safe to add
@@ -222,17 +254,16 @@ properties later.
 
 ## 3. Known limitations
 
-1. **Only page 1 of the 2025 Form 1040 is bound.** Every field on both pages
-   is recovered by the importer — 199 of them — but the shipped template
-   binds the identity block, filing status, dependents and the income lines
-   that the sample return exercises. The rest are drafted with a `TODO`
-   reference and would be bound the same way.
+1. **The official templates bind page 1 and Part V, not every field.** The
+   importer recovers all of them — 199 on Form 1040, 105 on Schedule C — but
+   the shipped templates bind the identity blocks, filing status, dependents,
+   the income and expense lines and Part V: what the sample return exercises.
+   The rest are drafted with a `TODO` reference and would be bound the same way.
 
-2. **The two `2024` templates are measured against generated fixtures.** They
-   are kept deliberately: they exercise a ruled cents column and a repeat
-   that runs down the page, neither of which the official 1040 has, and they
-   let the demo run for anyone who does not have the official PDF. Their
-   digests are real and the integrity check passes.
+2. **One fixture template remains.** `us.irs.f1040.2024` targets a generated
+   form, kept because neither official 2025 form rules dollars and cents into
+   separate columns and the feature needs somewhere to be demonstrated. Its
+   digest is real and the integrity check passes.
 
 3. **A field that is not a widget cannot be bound.** Form 1040 prints an "if
    more than four dependents, check here" box that is not a fillable field in
