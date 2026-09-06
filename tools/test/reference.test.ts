@@ -62,6 +62,22 @@ test("rejects syntax outside the documented subset", () => {
 });
 
 test("does not walk the prototype chain", () => {
-  assert.deepEqual(resolve("$.constructor", { root: data }), []);
-  assert.deepEqual(resolve("/__proto__", { root: data }), []);
+  // Nothing the data set does not itself hold may be reachable.
+  for (const ref of ["$.constructor", "/__proto__", "$.toString", "$.hasOwnProperty", "$.valueOf"]) {
+    assert.deepEqual(resolve(ref, { root: data }), [], `${ref} must select nothing`);
+  }
+});
+
+test("a data member is still reachable when its name is meaningful to the host", () => {
+  // JSON.parse produces these as ordinary own properties. They are data, and a
+  // template must be able to reach whatever the calculation engine produced.
+  const awkward = JSON.parse('{"__proto__":{"p":1},"constructor":{"c":2},"toString":"t"}') as Json;
+
+  assert.deepEqual(resolve("$.toString", { root: awkward }), ["t"]);
+  assert.deepEqual(resolve("$.constructor.c", { root: awkward }), [2]);
+  assert.deepEqual(resolve("/__proto__/p", { root: awkward }), [1]);
+
+  // ...and reading them must not have polluted anything.
+  assert.equal(({} as Record<string, unknown>).p, undefined);
+  assert.equal(Object.prototype.hasOwnProperty.call({}, "pwned"), false);
 });

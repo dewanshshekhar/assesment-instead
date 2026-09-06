@@ -202,8 +202,16 @@ document, and is small enough that a third party can reimplement it
 faithfully. An expression language would make templates a place where
 business logic accumulates, which is exactly what §1.2 rules out.
 
-Property lookup MUST use the object's own enumerable keys only. `$.constructor`
-and `/__proto__` MUST select nothing.
+Property lookup MUST use an object's **own** properties only; an implementation
+MUST NOT traverse the prototype chain. On a JavaScript-like runtime that means
+`$.toString` and `$.hasOwnProperty` select nothing, and no reference can reach
+a member the data set does not itself contain.
+
+A key is not reserved because a host language gives it meaning. If the data set
+genuinely contains a member named `constructor` or `__proto__` — `JSON.parse`
+produces those as ordinary own properties — a reference to it selects that
+member's value, because it is data like any other. What the rule forbids is
+*inheriting* a value the data never held.
 
 ### 5.4 Bindings, and forms filed more than once
 
@@ -717,6 +725,8 @@ Codes defined by this version:
 | `value/not-numeric` | numeric aggregate over a non-numeric node |
 | `comb/no-room`, `comb/narrow`, `comb/gap-past-end` | comb geometry is unusable |
 | `comb/too-long` | the value has more characters than the comb has cells |
+| `comb/missing-spec` | a `comb` field carries no `comb` block |
+| `value/empty` | a value declares neither `ref` nor `const` |
 | `rect/out-of-bounds`, `rect/overlap` | box geometry is wrong or ambiguous |
 | `page/out-of-range` | the page does not exist |
 | `id/duplicate` | two entries share an id |
@@ -728,6 +738,11 @@ Codes defined by this version:
 
 A field that produces an error is **not drawn**. An implementation MUST NOT
 print a partial or coerced value in its place.
+
+`comb/missing-spec` and `value/empty` report documents the schema already
+rejects. They exist because an implementation may be handed a template that
+was never validated, and failing with a named code is better than failing with
+a null dereference.
 
 ---
 
