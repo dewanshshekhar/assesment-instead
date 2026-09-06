@@ -16,13 +16,14 @@
     "render:from-plan": "node --experimental-strip-types src/cli.ts render --plan ../out/schedule-c.plan.json --out ../out/schedule-c-from-plan.pdf",
     "conformance:update": "node --experimental-strip-types src/update-conformance.ts",
     "test": "node --experimental-strip-types --test test/*.test.ts",
-    "demo": "npm run fixtures && npm run lint && npm run lint:alt && npm run render:official && npm run render:schedule-c && npm run render:alt && npm run render && npm run plan && npm run check-plan && npm run render:from-plan && npm run demo:browser",
+    "demo": "npm run fixtures && npm run lint && npm run lint:alt && npm run render:official && npm run render:schedule-c && npm run render:alt && npm run render && npm run plan && npm run check-plan && npm run render:from-plan && npm run demo:browser && npm run annotate",
     "render:official": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040.2025.json --data ../examples/sample-return.json --out ../out/f1040-2025-filled.pdf",
     "inspect": "node --experimental-strip-types src/cli.ts inspect ../templates/us.irs.f1040sc.2025.json --out ../out/schedule-c-labelled.pdf",
     "render:schedule-c": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040sc.2025.json --data ../examples/sample-return.json --out ../out/schedule-c-2025-filled.pdf",
     "demo:browser": "node --experimental-strip-types src/browser-demo.ts",
     "lint:alt": "node --experimental-strip-types src/cli.ts lint ../templates/us.irs.f1040sc.2025.json --data ../examples/alt-shape-return.json --bindings ../examples/bindings/alt-shape.json",
-    "render:alt": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040sc.2025.json --data ../examples/alt-shape-return.json --bindings ../examples/bindings/alt-shape.json --out ../out/schedule-c-from-alt-shape.pdf"
+    "render:alt": "node --experimental-strip-types src/cli.ts render ../templates/us.irs.f1040sc.2025.json --data ../examples/alt-shape-return.json --bindings ../examples/bindings/alt-shape.json --out ../out/schedule-c-from-alt-shape.pdf",
+    "annotate": "node --experimental-strip-types src/annotate.ts"
   },
   "dependencies": {
     "ajv": "^8.20.0",

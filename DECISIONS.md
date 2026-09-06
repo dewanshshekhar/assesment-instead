@@ -257,7 +257,23 @@ wholesale, which silently marked all five, because the underlying value is a
 truthy string. Byte-comparing the plan before and after the migration is what
 caught it.
 
-### 1.20 `additionalProperties: false` everywhere
+### 1.20 A visual editor, because coordinates are not readable
+
+Placing two hundred boxes is the bulk of producing a template, and importing
+an AcroForm only gets the ones the PDF declares. The rest were being placed by
+editing numbers in JSON and re-rendering to see what moved.
+
+`npm run annotate` builds a self-contained editor — the form, the boxes on it,
+drag and nudge and draw, template JSON back out. Self-contained for the same
+reason as the browser consumer: an authoring tool that needs a server is a tool
+nobody opens.
+
+It deliberately edits geometry and identity only. A repeat's rows are shown
+dashed and cannot be dragged, because they are generated from one origin and a
+step, and letting someone pull a single row out of alignment would produce a
+template that renders wrong in a way no linter checks.
+
+### 1.21 `additionalProperties: false` everywhere
 
 A misspelled `alignment` is a silent no-op in a permissive schema and a
 caught error in a strict one. Strictness now is what makes it safe to add
@@ -290,13 +306,14 @@ properties later.
    separate columns and the feature needs somewhere to be demonstrated. Its
    digest is real and the integrity check passes.
 
-3. **A field that is not a widget cannot be bound.** Form 1040 prints an "if
-   more than four dependents, check here" box that is not a fillable field in
-   this PDF. There is nothing for the importer to find, so the template leaves
-   it out rather than guessing at a rectangle — an X on the wrong line of a tax
-   return is worse than no X. The fifth dependent is still reported, on the
-   continuation statement. Binding it would mean measuring it by hand, which
-   is what the authoring tool in §4.1 is for.
+3. **A field that is not a widget is not bound in the shipped templates.**
+   Form 1040 prints an "if more than four dependents, check here" box that is
+   not a fillable field in this PDF, so the importer cannot find it and the
+   template leaves it out — an X on the wrong line of a tax return is worse
+   than no X. It can now be drawn in the annotation editor (§1.20); it has not
+   been, because the fifth dependent is already reported on the continuation
+   statement and adding it would mean shipping a coordinate nobody checked
+   against a filed return.
 
 4. **A truly flat or scanned form still needs manual measurement.** The
    recovery strategy in §1.15 works because the widget dictionaries survived.
@@ -321,13 +338,14 @@ properties later.
 
 ## 4. Future enhancements
 
-### 4.1 Visual annotation authoring
-A browser tool that renders the form and lets an author drag a box onto it,
-emitting the JSON. `inspect` (which prints each field id into its own box) is
-a first step, and it is what caught a checkbox bound to the wrong line while
-the 2025 template was being written — but it can only show boxes the PDF
-already declares. Drawing a new one, for a field the form prints but does not
-expose, still needs a mouse.
+### 4.1 Authoring beyond geometry
+`npm run annotate` now covers placing and moving boxes, including drawing ones
+the PDF never declared. What it does not cover is the rest of the model:
+formatting, overflow policy, comb gaps, conditions, and the structure of a
+repeat are all still edited as JSON. Extending the panel to those is
+straightforward; what is not straightforward, and would matter more, is
+editing a *binding profile* against a live return so an author can see the
+value a concept resolves to as they bind it.
 
 ### 4.2 Template inheritance and cross-year diffing
 Most of Form 1040 does not move between tax years. A 2025 template should be

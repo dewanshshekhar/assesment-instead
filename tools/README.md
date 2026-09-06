@@ -28,6 +28,7 @@ the schema check needs `ajv`.
 | `src/fixtures.ts` | generates the example blank forms | `pdf-lib` |
 | `src/update-conformance.ts` | regenerates the golden plans | |
 | `src/browser-demo.ts` | builds a self-contained browser consumer of a plan | |
+| `src/annotate.ts` | builds a self-contained visual annotation editor | |
 | `src/cli.ts` | command line entry point | |
 
 TypeScript runs directly on Node 22.6+ via type stripping; there is no build
@@ -123,6 +124,20 @@ npm run render:alt    # us.irs.f1040sc.2025 against examples/alt-shape-return.js
 A profile is refused when its `for` names another template or its `model`
 differs from the template's — applying the wrong one would bind concepts to
 the wrong values and the output would look entirely plausible.
+
+## The annotation editor
+
+```bash
+npm run annotate      # -> out/annotation-editor.html
+```
+
+Opens with a double-click. Drag to move, handles to resize, <kbd>↑↓←→</kbd> to
+nudge by a point (hold shift for a quarter), shift-drag on bare form to draw a
+new box, Delete to remove, Export to get the template JSON back.
+
+It edits geometry and identity, not the whole schema: a repeat's generated rows
+are shown dashed and are not draggable, because dragging one row out of line
+with the rest is never what an author means.
 
 ## The browser consumer
 
