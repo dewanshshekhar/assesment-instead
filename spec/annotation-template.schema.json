@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://instead.example/schemas/tfas/1.0.0/annotation-template.schema.json",
+  "title": "Tax Form Annotation Template",
+  "description": "Declarative description of where and how to print values onto a fixed-layout U.S. tax form.",
+  "type": "object",
+  "required": ["specVersion", "template", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "$comment": { "type": "string" },
+    "specVersion": { "$ref": "#/$defs/semver" },
+    "template": { "$ref": "#/$defs/templateIdentity" },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "style": { "$ref": "#/$defs/style" },
+        "format": { "$ref": "#/$defs/format" }
+      }
+    },
+    "bind": {
+      "type": "object",
+      "required": ["root"],
+      "additionalProperties": false,
+      "properties": { "root": { "$ref": "#/$defs/reference" } }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "reference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "RFC 6901 JSON Pointer (/a/b, @/a/b) or JSONPath-lite ($.a.b, @.a.b). See SPEC.md section 5.",
+      "pattern": "^(\\$|@|/)"
+    },
+
+    "rect": {
+      "type": "array",
+      "description": "[x, y, width, height] in points, top-left origin.",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "type": "number" },
+      "prefixItems": [
+        { "type": "number", "minimum": 0 },
+        { "type": "number", "minimum": 0 },
+        { "type": "number", "exclusiveMinimum": 0 },
+        { "type": "number", "exclusiveMinimum": 0 }
+      ]
+    },
+
+    "templateIdentity": {
+      "type": "object",
+      "required": ["id", "title", "taxYear", "revision", "source", "geometry"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+          "description": "Reverse-DNS identifier, e.g. us.irs.f1040.2024"
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "taxYear": { "type": "integer", "minimum": 1913, "maximum": 2999 },
+        "revision": { "type": "string", "minLength": 1 },
+        "ombNumber": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{4}$" },
+        "source": { "$ref": "#/$defs/sourceDocument" },
+        "geometry": { "$ref": "#/$defs/geometry" }
+      }
+    },
+
+    "sourceDocument": {
+      "type": "object",
+      "required": ["filename", "sha256", "pageCount"],
+      "additionalProperties": false,
+      "properties": {
+        "filename": { "type": "string", "minLength": 1 },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Digest of the unmodified source PDF the coordinates were measured against."
+        },
+        "pageCount": { "type": "integer", "minimum": 1 },
+        "url": { "type": "string", "pattern": "^https?://" }
+      }
+    },
+
+    "geometry": {
+      "type": "object",
+      "required": ["unit", "origin", "pages"],
+      "additionalProperties": false,
+      "properties": {
+        "unit": { "const": "pt" },
+        "origin": { "const": "top-left" },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["width", "height"],
+            "additionalProperties": false,
+            "properties": {
+              "width": { "type": "number", "exclusiveMinimum": 0 },
+              "height": { "type": "number", "exclusiveMinimum": 0 },
+              "rotation": { "enum": [0, 90, 180, 270] }
+            }
+          }
+        }
+      }
+    },
+
+    "entry": {
+      "oneOf": [{ "$ref": "#/$defs/field" }, { "$ref": "#/$defs/repeatGroup" }],
+      "discriminator": { "propertyName": "kind" }
+    },
+
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "minLength": 1
+    },
+
+    "field": {
+      "type": "object",
+      "required": ["kind", "id", "page", "type", "rect", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "kind": { "const": "field" },
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "page": { "type": "integer", "minimum": 0 },
+        "type": { "$ref": "#/$defs/fieldType" },
+        "rect": { "$ref": "#/$defs/rect" },
+        "value": { "$ref": "#/$defs/valueSpec" },
+        "format": { "$ref": "#/$defs/format" },
+        "style": { "$ref": "#/$defs/style" },
+        "visibleWhen": { "$ref": "#/$defs/condition" },
+        "radioGroup": { "$ref": "#/$defs/identifier" },
+        "comb": { "$ref": "#/$defs/combSpec" },
+        "cents": {
+          "type": "object",
+          "required": ["rect"],
+          "additionalProperties": false,
+          "properties": {
+            "rect": { "$ref": "#/$defs/rect" },
+            "style": { "$ref": "#/$defs/style" }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "comb" } }, "required": ["type"] },
+          "then": { "required": ["comb"] },
+          "else": { "not": { "required": ["comb"] } }
+        },
+        {
+          "if": { "required": ["cents"] },
+          "then": { "properties": { "type": { "const": "currency" } } }
+        },
+        {
+          "if": { "required": ["radioGroup"] },
+          "then": { "properties": { "type": { "const": "checkbox" } } }
+        }
+      ]
+    },
+
+    "rowField": {
+      "type": "object",
+      "description": "A field inside a repeat row. Identical to a field except that `page` is inherited and `rect` is relative to the row origin.",
+      "required": ["kind", "id", "type", "rect", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "kind": { "const": "field" },
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "type": { "$ref": "#/$defs/fieldType" },
+        "rect": { "$ref": "#/$defs/rect" },
+        "value": { "$ref": "#/$defs/valueSpec" },
+        "format": { "$ref": "#/$defs/format" },
+        "style": { "$ref": "#/$defs/style" },
+        "visibleWhen": { "$ref": "#/$defs/condition" },
+        "comb": { "$ref": "#/$defs/combSpec" },
+        "cents": {
+          "type": "object",
+          "required": ["rect"],
+          "additionalProperties": false,
+          "properties": {
+            "rect": { "$ref": "#/$defs/rect" },
+            "style": { "$ref": "#/$defs/style" }
+          }
+        }
+      }
+    },
+
+    "fieldType": {
+      "enum": [
+        "text",
+        "multilineText",
+        "currency",
+        "number",
+        "percentage",
+        "date",
+        "comb",
+        "checkbox",
+        "staticText"
+      ]
+    },
+
+    "combSpec": {
+      "type": "object",
+      "required": ["cells"],
+      "additionalProperties": false,
+      "properties": {
+        "cells": { "type": "integer", "minimum": 1, "maximum": 64 },
+        "gaps": {
+          "type": "object",
+          "description": "Extra spacing in points, keyed by the number of cells preceding the gap.",
+          "propertyNames": { "pattern": "^[0-9]+$" },
+          "additionalProperties": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+
+    "repeatGroup": {
+      "type": "object",
+      "required": ["kind", "id", "page", "over", "origin", "rowHeight", "maxRows", "row"],
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "kind": { "const": "repeat" },
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "page": { "type": "integer", "minimum": 0 },
+        "over": { "$ref": "#/$defs/reference" },
+        "origin": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "number", "minimum": 0 }
+        },
+        "rowHeight": { "type": "number", "exclusiveMinimum": 0 },
+        "maxRows": { "type": "integer", "minimum": 1 },
+        "overflow": { "enum": ["continuation", "truncate", "error"] },
+        "continuation": {
+          "type": "object",
+          "required": ["statementId", "title"],
+          "additionalProperties": false,
+          "properties": {
+            "statementId": { "$ref": "#/$defs/identifier" },
+            "title": { "type": "string", "minLength": 1 }
+          }
+        },
+        "row": {
+          "type": "object",
+          "required": ["fields"],
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/rowField" }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "overflow": { "const": "continuation" } }, "required": ["overflow"] },
+          "then": { "required": ["continuation"] }
+        }
+      ]
+    },
+
+    "valueSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": { "$ref": "#/$defs/reference" },
+        "const": { "type": ["string", "number", "boolean"] },
+        "aggregate": { "enum": ["sum", "count", "first", "last", "min", "max", "join"] },
+        "separator": { "type": "string" },
+        "transform": {
+          "type": "array",
+          "items": { "enum": ["digitsOnly", "upper", "lower", "trim", "abs", "negate"] }
+        },
+        "fallback": { "type": "array", "items": { "$ref": "#/$defs/reference" } },
+        "default": { "type": ["string", "number", "boolean", "null"] },
+        "equals": { "type": ["string", "number", "boolean"] }
+      },
+      "oneOf": [{ "required": ["ref"] }, { "required": ["const"] }]
+    },
+
+    "condition": {
+      "type": "object",
+      "required": ["ref"],
+      "additionalProperties": false,
+      "minProperties": 2,
+      "properties": {
+        "ref": { "$ref": "#/$defs/reference" },
+        "equals": { "type": ["string", "number", "boolean"] },
+        "notEquals": { "type": ["string", "number", "boolean"] },
+        "exists": { "type": "boolean" },
+        "truthy": { "type": "boolean" },
+        "gt": { "type": "number" },
+        "lt": { "type": "number" }
+      }
+    },
+
+    "format": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "decimals": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "rounding": { "enum": ["half-up", "half-even", "truncate"] },
+        "thousands": { "type": "boolean" },
+        "negative": { "enum": ["parentheses", "minus", "none"] },
+        "blankIfZero": { "type": "boolean" },
+        "blankIfNull": { "type": "boolean" },
+        "prefix": { "type": "string" },
+        "suffix": { "type": "string" },
+        "dateFormat": { "type": "string" }
+      }
+    },
+
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "font": {
+          "enum": ["Helvetica", "Helvetica-Bold", "Courier", "Courier-Bold", "Times-Roman"]
+        },
+        "size": { "type": "number", "exclusiveMinimum": 0, "maximum": 72 },
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "align": { "enum": ["left", "center", "right"] },
+        "vAlign": { "enum": ["top", "middle", "bottom"] },
+        "padding": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "top": { "type": "number", "minimum": 0 },
+            "right": { "type": "number", "minimum": 0 },
+            "bottom": { "type": "number", "minimum": 0 },
+            "left": { "type": "number", "minimum": 0 }
+          }
+        },
+        "letterSpacing": { "type": "number" },
+        "lineHeight": { "type": "number", "exclusiveMinimum": 0 },
+        "overflow": { "enum": ["error", "shrink", "truncate", "ellipsis", "wrap"] },
+        "minSize": { "type": "number", "exclusiveMinimum": 0 },
+        "glyph": { "type": "string", "minLength": 1, "maxLength": 4 }
+      }
+    }
+  }
+}

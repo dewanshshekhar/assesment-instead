@@ -1,0 +1,520 @@
+{
+  "specVersion": "1.0.0",
+  "template": {
+    "id": "us.irs.f1040.2024",
+    "title": "Form 1040 — U.S. Individual Income Tax Return (page 1)",
+    "taxYear": 2024,
+    "revision": "fixture-2024.1",
+    "ombNumber": "1545-0074",
+    "source": {
+      "filename": "f1040-p1.pdf",
+      "sha256": "516ee91ccff56894518b15e30ca81d3e74d209390e0244395b7878a91cec4122",
+      "pageCount": 1
+    },
+    "geometry": {
+      "unit": "pt",
+      "origin": "top-left",
+      "pages": [
+        {
+          "width": 612,
+          "height": 792
+        }
+      ]
+    }
+  },
+  "defaults": {
+    "style": {
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "left": 3,
+        "right": 4
+      },
+      "overflow": "error"
+    },
+    "format": {
+      "blankIfZero": true
+    }
+  },
+  "bind": {
+    "root": "$.taxReturn"
+  },
+  "entries": [
+    {
+      "kind": "field",
+      "id": "p1.firstName",
+      "label": "Your first name and middle initial",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        88,
+        190,
+        16
+      ],
+      "value": {
+        "ref": "@.taxpayer.firstName"
+      },
+      "style": {
+        "overflow": "shrink"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.lastName",
+      "label": "Last name",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        232,
+        88,
+        190,
+        16
+      ],
+      "value": {
+        "ref": "@.taxpayer.lastName"
+      },
+      "style": {
+        "overflow": "shrink"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.ssn",
+      "label": "Your social security number",
+      "page": 0,
+      "type": "comb",
+      "rect": [
+        432,
+        88,
+        144,
+        16
+      ],
+      "comb": {
+        "cells": 9,
+        "gaps": {
+          "3": 8,
+          "5": 8
+        }
+      },
+      "value": {
+        "ref": "@.taxpayer.identifiers.ssn",
+        "transform": [
+          "digitsOnly"
+        ]
+      },
+      "style": {
+        "font": "Courier",
+        "size": 9,
+        "align": "center"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.single",
+      "label": "Filing status — Single",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        40,
+        132,
+        10,
+        10
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "SINGLE"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.mfj",
+      "label": "Filing status — Married filing jointly",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        130,
+        132,
+        10,
+        10
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_JOINTLY"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.mfs",
+      "label": "Filing status — Married filing separately",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        260,
+        132,
+        10,
+        10
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "MARRIED_FILING_SEPARATELY"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.status.hoh",
+      "label": "Filing status — Head of household",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        400,
+        132,
+        10,
+        10
+      ],
+      "radioGroup": "filingStatus",
+      "value": {
+        "ref": "@.filingStatus",
+        "equals": "HEAD_OF_HOUSEHOLD"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.address",
+      "label": "Home address (number and street)",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        168,
+        386,
+        16
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.street"
+      },
+      "style": {
+        "overflow": "shrink"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.apt",
+      "label": "Apt. no.",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        432,
+        168,
+        144,
+        16
+      ],
+      "value": {
+        "ref": "@.taxpayer.address.unit"
+      },
+      "visibleWhen": {
+        "ref": "@.taxpayer.address.unit",
+        "exists": true
+      },
+      "style": {
+        "overflow": "shrink"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line1a",
+      "label": "1a Total amount from Form(s) W-2, box 1",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        232,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          232,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.income.w2[*].wages",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 2,
+        "thousands": false,
+        "negative": "parentheses"
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line2b",
+      "label": "2b Taxable interest",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        254,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          254,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.income.interest.taxable"
+      },
+      "format": {
+        "decimals": 2
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line3b",
+      "label": "3b Ordinary dividends",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        276,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          276,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.income.dividends.ordinary"
+      },
+      "format": {
+        "decimals": 2
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line8",
+      "label": "8 Additional income (net profit from every Schedule C)",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        298,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          298,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.schedules.scheduleC[*].netProfit",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 2
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line9",
+      "label": "9 Total income",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        320,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          320,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.totals.totalIncome"
+      },
+      "format": {
+        "decimals": 2
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line11",
+      "label": "11 Adjusted gross income",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        342,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          342,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.totals.adjustedGrossIncome"
+      },
+      "format": {
+        "decimals": 2
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.line25a",
+      "label": "25a Federal income tax withheld from Form(s) W-2",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        462,
+        400,
+        92,
+        14
+      ],
+      "cents": {
+        "rect": [
+          556,
+          400,
+          30,
+          14
+        ],
+        "style": {
+          "align": "center"
+        }
+      },
+      "value": {
+        "ref": "@.income.w2[*].federalWithheld",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 2
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.occupation",
+      "label": "Your occupation",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        716,
+        220,
+        16
+      ],
+      "value": {
+        "ref": "@.taxpayer.occupation"
+      },
+      "style": {
+        "overflow": "shrink"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "p1.signDate",
+      "label": "Date",
+      "page": 0,
+      "type": "date",
+      "rect": [
+        432,
+        716,
+        144,
+        16
+      ],
+      "value": {
+        "ref": "@.preparedOn"
+      },
+      "format": {
+        "dateFormat": "MM/DD/YYYY"
+      }
+    }
+  ]
+}
