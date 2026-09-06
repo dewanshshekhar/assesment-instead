@@ -103,14 +103,62 @@ they plug into. It also means text measurement — the one thing that genuinely
 differs between implementations — is isolated in the stage that owns the
 fonts.
 
-### 1.10 Base-14 fonts only in version 1
+### 1.10 The render plan is a versioned interchange format, not an internal detail
+
+The first version of this treated the plan as an implementation detail: the
+renderer built one, then reached back into the template for padding,
+vertical alignment and overflow policy. That made SPEC §11's claim — that a
+host application can draw from a plan with its own code — quietly false. A
+third party holding only a plan could not have drawn a correct page.
+
+So the plan is now a first-class artefact: its own schema, its own version
+number, and a hard self-containment rule (SPEC §11.2). Every presentation
+property is resolved and present on the placement, so no consumer ever
+applies a default of its own.
+
+`planVersion` is deliberately **separate from `specVersion`**. The two change
+for different reasons and are consumed by different people: a new field type
+is a template-format change that a renderer never sees, so a renderer should
+not be forced to re-certify against it.
+
+The regression guard is a test that reads `render.ts` and fails if it
+mentions templates at all.
+
+**Cost:** placements are more verbose, and the same padding is repeated on
+many of them. That is the right trade — the redundancy is what removes the
+ambiguity.
+
+### 1.11 Output is byte-reproducible
+
+PDF writers stamp a modification time on save, so two identical runs produced
+different files. The metadata is now pinned, and rendering the same plan onto
+the same PDF twice yields identical bytes.
+
+That buys caching, meaningful diffs between two runs, and golden-file
+regression testing — all worth having when the artefact is a tax return. The
+filing timestamp belongs to the return data, not to document metadata, and a
+caller that genuinely wants a live one can pass it.
+
+### 1.12 Conformance by golden plan, not by golden image
+
+Because plans carry no font metrics and no implementation-defined defaults,
+two implementations can be compared *exactly*. `conformance/plans/` holds a
+golden plan per template and the suite asserts a byte-for-byte match.
+
+Pixel comparison was the alternative. It catches more — a box that moved two
+points — but it is fragile across font versions and rasterisers, and it
+cannot tell a third-party implementer *which* value they got wrong. Golden
+plans answer that precisely. Image comparison is still worth adding on top;
+see §4.5.
+
+### 1.13 Base-14 fonts only in version 1
 
 No font files travel with a template and every PDF implementation already has
 these. Embedded fonts are a version 1.1 question (§4.4 below), and answering
 it needs licensing decisions that a specification should not make on the
 reader's behalf.
 
-### 1.11 `additionalProperties: false` everywhere
+### 1.14 `additionalProperties: false` everywhere
 
 A misspelled `alignment` is a silent no-op in a permissive schema and a
 caught error in a strict one. Strictness now is what makes it safe to add
@@ -156,6 +204,11 @@ properties later.
 5. **`wrap` uses greedy line breaking.** Adequate for a form's explanation
    boxes; not a typesetting engine.
 
+6. **Golden plans prove agreement, not correctness of placement.** They
+   confirm two implementations put the same string in the same rectangle;
+   they cannot confirm the rectangle is where the form's box actually is.
+   Only rendering and looking — or §4.5 — does that.
+
 ---
 
 ## 4. Future enhancements
@@ -182,9 +235,11 @@ A `fonts` block declaring embedded font files, with a documented fallback
 chain. Needed for any agency form that requires a specific typeface.
 
 ### 4.5 Golden-image regression tests
-Render every template against a frozen data set, rasterise, and pixel-diff
-against a committed reference image in CI. Catches a box that moved two
-points, which no unit test will.
+Golden plans (§1.12) prove two implementations resolved the same values into
+the same boxes. They cannot prove the boxes are in the right place on the
+paper. Rasterising each rendered form and pixel-diffing against a committed
+reference image would catch a box that moved two points — the one class of
+error that survives every check currently in the repository.
 
 ### 4.6 A second jurisdiction
 State forms would exercise the parts of the model that are quietly
@@ -198,8 +253,9 @@ element for that line, so print and electronic filing are proven to be
 reading the same value from the same place, rather than being two
 independent traversals of the return.
 
-### 4.8 A conformance test suite
-A published corpus of templates, data sets and expected render plans, so a
-third-party implementation can prove it agrees with the specification.
-Placements contain no font metrics precisely so that they can be compared
-exactly (SPEC §11) — the suite is the natural next step.
+### 4.8 Publishing the conformance corpus
+The mechanism exists (§1.12): golden plans, asserted byte-for-byte. What is
+missing is breadth and packaging — a corpus covering every field type,
+formatting rule and overflow path, distributed separately from this
+implementation, with a runner a third party can point at their own renderer
+to self-certify.

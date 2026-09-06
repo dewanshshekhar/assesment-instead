@@ -279,33 +279,73 @@ export interface Style {
 }
 
 // ---------------------------------------------------------------------------
-// Renderer output contract
+// Render plan: the intermediate representation
 // ---------------------------------------------------------------------------
 
 /**
- * What a conforming renderer produces before it touches a PDF. Splitting
- * resolution from drawing is what lets a host application use its own
- * rendering stack: it can consume `PlacedText` directly and ignore the
- * reference implementation entirely.
+ * The compile target.
+ *
+ * A template is authored; a render plan is produced. Splitting the two is
+ * what lets a host application use its own rendering stack: it consumes a
+ * plan and never needs to understand templates, references or formatting.
+ *
+ * A plan MUST be self-contained. Every value needed to draw a placement is
+ * present on the placement itself — a consumer that has only the plan can
+ * draw a correct page. Nothing is resolved by looking back at the template,
+ * because a consumer is not required to have one.
+ *
+ * The one thing a plan deliberately does not contain is font metrics. Those
+ * differ between implementations, so fitting text is left to the stage that
+ * owns the fonts (see `PlacedText.overflow`).
  */
 export interface RenderPlan {
+  /**
+   * Version of the plan format, independent of `specVersion`. A template
+   * format may gain features without changing what a renderer consumes, and
+   * a renderer pins this rather than the specification version.
+   */
+  planVersion: SpecVersion;
   templateId: string;
+  templateRevision: string;
+  taxYear: number;
+  /** Repeated from the template so a plan alone can be checked against a PDF. */
+  source: SourceDocument;
+  /** Repeated so a consumer can convert to its own coordinate space. */
+  geometry: Geometry;
   placements: PlacedText[];
   statements: ContinuationStatement[];
   diagnostics: Diagnostic[];
 }
 
+/**
+ * One string, fully resolved, with everything needed to draw it.
+ *
+ * Every presentation property is required and already merged from the
+ * template defaults, so a consumer never applies an inheritance rule of its
+ * own and two consumers cannot disagree about what a missing value meant.
+ */
 export interface PlacedText {
   fieldId: string;
   page: number;
-  /** Resolved top-left origin of the text box, in points. */
+  /** [x, y, width, height] in points, top-left origin. */
   rect: Rect;
   text: string;
   font: string;
   size: number;
   color: string;
   align: "left" | "center" | "right";
-  /** Per-character cells for comb fields; absent for ordinary text. */
+  vAlign: "top" | "middle" | "bottom";
+  /** Resolved on all four sides; a checkbox always resolves to zero. */
+  padding: { top: number; right: number; bottom: number; left: number };
+  /** Applied by the drawing stage, which is the stage that has font metrics. */
+  overflow: "error" | "shrink" | "truncate" | "ellipsis" | "wrap";
+  minSize: number;
+  lineHeight: number;
+  /**
+   * Per-character cells for a comb field, absent otherwise. Cell geometry is
+   * derived from the template and carried here so that it cannot be
+   * re-derived differently downstream.
+   */
   cells?: { x: number; width: number; char: string }[];
 }
 

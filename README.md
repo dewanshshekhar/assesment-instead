@@ -12,7 +12,8 @@ is implementable, and the authoring tools you would want alongside it.
 |---|---|
 | **[`SPEC.md`](SPEC.md)** | The normative specification — coordinates, references, formatting, repeats |
 | **[`DECISIONS.md`](DECISIONS.md)** | Why it is shaped this way, what it deliberately does not do, what comes next |
-| [`spec/annotation-template.schema.json`](spec/annotation-template.schema.json) | JSON Schema (draft 2020-12) — the machine-checkable form |
+| [`spec/annotation-template.schema.json`](spec/annotation-template.schema.json) | JSON Schema for a template (draft 2020-12) |
+| [`spec/render-plan.schema.json`](spec/render-plan.schema.json) | JSON Schema for the render plan — the interchange format |
 | [`spec/types.ts`](spec/types.ts) | The same model as typed interfaces |
 
 ---
@@ -26,6 +27,26 @@ in the narrow column beside it"* — and it has to say it in a way that a team
 who did not write it can implement independently.
 
 That statement is what this specification defines.
+
+## Two stages
+
+A template is authored by a person. A **render plan** is compiled from it,
+and that is what a printing application consumes.
+
+```
+template + data  ──resolve──▶  render plan  ──draw──▶  pages
+   (authored)                 (interchange)          (any stack)
+```
+
+The plan is self-contained: every placement carries its own resolved font,
+alignment, padding and overflow policy, so a consumer never needs the
+template — which is what makes "print it with your own code" true rather
+than merely claimed. The one thing a plan omits is font metrics, because
+those belong to whichever stack does the drawing.
+
+That omission is also what makes plans comparable. `conformance/plans/`
+holds a golden plan per template; two implementations conform when they
+produce byte-identical plans for the same input.
 
 ## What it covers
 
@@ -42,6 +63,8 @@ That statement is what this specification defines.
   than the form has lines.
 - **Surviving next year** — every template is pinned to the digest of the
   exact PDF its coordinates were measured against.
+- **Being checkable** — a versioned interchange format with its own schema,
+  golden-plan conformance tests, and byte-reproducible output.
 
 ## What a template looks like
 
@@ -85,13 +108,18 @@ Requires Node 22.6 or newer. No build step.
 ```bash
 cd tools
 npm install
-npm run demo     # generate the blank forms, lint the templates, render both
-npm test         # 61 tests
+npm run demo     # fixtures, lint, render, compile a plan, check it, draw from it
+npm test         # 77 tests
 ```
 
-`npm run demo` writes `out/f1040-filled.pdf` and `out/schedule-c-filled.pdf`.
-The Schedule C has twelve expenses and nine ruled lines, so it also produces a
-continuation statement — the last printed row carries the total of what
+`npm run demo` walks the whole pipeline. Its last two steps are the
+interesting ones: it compiles Schedule C to `out/schedule-c.plan.json`,
+validates that file against the plan schema, and then renders
+`out/schedule-c-filled.pdf` **from the plan alone** — the renderer is handed
+no template and no data set.
+
+That Schedule C has twelve expenses and nine ruled lines, so it also produces
+a continuation statement: the last printed row carries the total of what
 spilled, and the spilled rows are listed in full on an appended page.
 
 ## Repository map
@@ -100,13 +128,16 @@ spilled, and the spilled rows are listed in full on an appended page.
 SPEC.md                      the specification
 DECISIONS.md                 trade-offs, limitations, future work
 spec/
-  annotation-template.schema.json   JSON Schema (draft 2020-12)
+  annotation-template.schema.json   JSON Schema for a template
+  render-plan.schema.json           JSON Schema for the interchange format
   types.ts                          the same model as typed interfaces
 templates/
   us.irs.f1040.2024.json            annotated Form 1040, page 1
   us.irs.f1040sc.2024.json          annotated Schedule C
 examples/
   sample-return.json                a deeply nested return, internally consistent
+conformance/
+  plans/                            golden render plans, asserted byte-for-byte
 tools/                       supporting implementation — see tools/README.md
 ```
 

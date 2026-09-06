@@ -21,10 +21,12 @@ the schema check needs `ajv`.
 | `src/format.ts` | formatted output, with scaled-integer money rounding | none |
 | `src/layout.ts` | rect maths, comb cell derivation, alignment, wrapping | none |
 | `src/plan.ts` | template + data → render plan | none |
+| `src/conformance.ts` | golden-plan cases, shared by tests and the updater | none |
 | `src/lint.ts` | schema and semantic validation | `ajv` |
 | `src/render.ts` | render plan → PDF | `pdf-lib` |
 | `src/import.ts` | AcroForm → draft template | `pdf-lib` |
 | `src/fixtures.ts` | generates the example blank forms | `pdf-lib` |
+| `src/update-conformance.ts` | regenerates the golden plans | |
 | `src/cli.ts` | command line entry point | |
 
 TypeScript runs directly on Node 22.6+ via type stripping; there is no build
@@ -34,8 +36,8 @@ step and no transpiler config.
 
 ```bash
 npm install
-npm run demo      # fixtures + lint + render, end to end
-npm test          # 61 tests
+npm run demo      # fixtures, lint, render, compile a plan, check it, draw from it
+npm test          # 77 tests
 ```
 
 Or directly:
@@ -48,8 +50,10 @@ node --experimental-strip-types src/cli.ts <command> [options]
 |---------|--------------|
 | `fixtures [--out dir]` | Generate the example blank forms and print their digests |
 | `lint <template...> [--data f]` | Validate against the schema and the semantic rules; with `--data`, also resolve every reference and build a plan |
-| `plan <template> --data f [--out f]` | Print the resolved render plan as JSON |
-| `render <template> --data f --out f.pdf [--source f.pdf] [--ignore-digest]` | Draw the plan onto the source PDF and append any continuation statements |
+| `plan <template> --data f [--out f]` | Compile a template to a render plan |
+| `check-plan <plan.json...>` | Validate a plan against `spec/render-plan.schema.json`, the way a consumer would before drawing it |
+| `render <template> --data f --out f.pdf` | Compile and draw in one step |
+| `render --plan f.json --out f.pdf` | Draw from a serialised plan, with no template in reach |
 | `import <pdf> --id <id> --out f.json` | Read a fillable PDF's AcroForm and emit a draft template |
 | `stamp <template> [--source f.pdf]` | Re-record `source.sha256` after a form is reissued |
 
@@ -77,6 +81,22 @@ node --experimental-strip-types src/cli.ts render \
 
 `import` needs the PDF to carry an AcroForm. Flat or scanned forms still have
 to be measured by hand.
+
+## Conformance
+
+`conformance/plans/` holds a golden render plan for each example template,
+and the test suite asserts the compiled plan matches byte-for-byte. A change
+to resolution, formatting or geometry therefore shows up as a reviewable diff
+rather than as a silently different tax form.
+
+```bash
+npm run conformance:update   # regenerate, then read the diff
+```
+
+Regenerate deliberately. The goldens are the contract every consumer draws
+from, and they are also what a third-party implementation compares itself
+against — plans carry no font metrics precisely so that agreement can be
+exact.
 
 ## When a form is reissued
 

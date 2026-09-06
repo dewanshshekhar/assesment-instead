@@ -1,11 +1,13 @@
 /**
- * Builds a RenderPlan: every value resolved, formatted and placed, with no
- * font metrics involved.
+ * Builds a RenderPlan: every value resolved, formatted, styled and placed.
  *
- * The split matters. A host application has its own fonts, and its metrics
- * will not match this one's, so the plan stops at "this string goes in this
- * box with this alignment" and leaves fitting to the drawing stage. That is
- * the seam at which a third party plugs in their own renderer.
+ * The plan is the compile target and it is self-contained by construction.
+ * Every presentation property is merged from the template defaults here, so
+ * that a consumer holding only the plan can draw a correct page and two
+ * consumers cannot disagree about what an absent value meant.
+ *
+ * The single thing left undecided is fitting text to its box, because that
+ * needs font metrics and those belong to whichever stack does the drawing.
  */
 
 import type {
@@ -25,7 +27,24 @@ import { evaluate, isChecked, EvaluationError, type ValueSpec } from "./value.ts
 import { formatValue, splitCents } from "./format.ts";
 import { combCells, translate, type Rect } from "./layout.ts";
 
-const STYLE_FALLBACK: Required<Pick<Style, "font" | "size" | "color" | "align" | "vAlign" | "overflow" | "minSize" | "glyph" | "lineHeight" | "letterSpacing">> = {
+export const PLAN_VERSION = "1.0.0";
+
+type Padding = { top: number; right: number; bottom: number; left: number };
+
+interface ResolvedStyle {
+  font: string;
+  size: number;
+  color: string;
+  align: "left" | "center" | "right";
+  vAlign: "top" | "middle" | "bottom";
+  padding: Padding;
+  overflow: "error" | "shrink" | "truncate" | "ellipsis" | "wrap";
+  minSize: number;
+  lineHeight: number;
+  glyph: string;
+}
+
+const STYLE_FALLBACK: Omit<ResolvedStyle, "padding"> = {
   font: "Helvetica",
   size: 10,
   color: "#000000",
@@ -33,9 +52,8 @@ const STYLE_FALLBACK: Required<Pick<Style, "font" | "size" | "color" | "align" |
   vAlign: "middle",
   overflow: "error",
   minSize: 6,
-  glyph: "X",
   lineHeight: 1.15,
-  letterSpacing: 0,
+  glyph: "X",
 };
 
 export function buildPlan(template: AnnotationTemplate, data: Json): RenderPlan {
@@ -57,7 +75,17 @@ export function buildPlan(template: AnnotationTemplate, data: Json): RenderPlan 
     }
   }
 
-  return { templateId: template.template.id, placements, statements, diagnostics };
+  return {
+    planVersion: PLAN_VERSION,
+    templateId: template.template.id,
+    templateRevision: template.template.revision,
+    taxYear: template.template.taxYear,
+    source: template.template.source,
+    geometry: template.template.geometry,
+    placements,
+    statements,
+    diagnostics,
+  };
 }
 
 function resolveBinding(template: AnnotationTemplate, data: Json, diagnostics: Diagnostic[]): Json {
@@ -74,6 +102,50 @@ function resolveBinding(template: AnnotationTemplate, data: Json, diagnostics: D
     return data;
   }
   return nodes[0];
+}
+
+// ---------------------------------------------------------------------------
+// Style resolution
+// ---------------------------------------------------------------------------
+
+function normalisePadding(padding: Style["padding"]): Padding {
+  return {
+    top: padding?.top ?? 0,
+    right: padding?.right ?? 0,
+    bottom: padding?.bottom ?? 0,
+    left: padding?.left ?? 0,
+  };
+}
+
+/**
+ * Merges template defaults under a field's own style, one level deep, and
+ * resolves every property to a concrete value.
+ *
+ * Padding insets a text box. A checkbox is a mark centred in the ruled square
+ * itself, so inherited text padding must not shrink it: on a 10pt box a
+ * default 3/4pt inset leaves no room for the glyph at all. Applying that rule
+ * here rather than at draw time keeps it a property of the specification
+ * instead of a quirk of one renderer.
+ */
+function resolveStyle(
+  template: AnnotationTemplate,
+  field: Field | Omit<Field, "page">,
+  override?: Style,
+): ResolvedStyle {
+  const merged: Style = { ...template.defaults?.style, ...field.style, ...override };
+  return {
+    ...STYLE_FALLBACK,
+    ...stripUndefined(merged),
+    padding: field.type === "checkbox" ? normalisePadding({}) : normalisePadding(merged.padding),
+  } as ResolvedStyle;
+}
+
+function stripUndefined(style: Style): Partial<ResolvedStyle> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(style)) {
+    if (value !== undefined && key !== "padding") out[key] = value;
+  }
+  return out as Partial<ResolvedStyle>;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,14 +167,14 @@ function placeField(
 
   if (field.visibleWhen && !conditionHolds(field.visibleWhen, ctx)) return;
 
-  const style = { ...STYLE_FALLBACK, ...template.defaults?.style, ...field.style };
+  const style = resolveStyle(template, field);
   const format: Format = { ...template.defaults?.format, ...field.format };
   const rect = translate(field.rect as Rect, offset[0], offset[1]);
   const value = field.value as ValueSpec;
 
   if (field.type === "checkbox") {
     if (!isChecked(value, evaluate(value, ctx))) return;
-    out.push(base(fieldId, page, rect, style.glyph, style));
+    out.push(place(fieldId, page, rect, style.glyph, style));
     return;
   }
 
@@ -116,7 +188,13 @@ function placeField(
     if (!field.comb) {
       throw new EvaluationError("comb/missing-spec", `field '${fieldId}' is type 'comb' but has no 'comb' block`);
     }
-    const placement = base(fieldId, page, rect, text, style);
+    if (text.length > field.comb.cells) {
+      throw new EvaluationError(
+        "comb/too-long",
+        `field '${fieldId}' has ${field.comb.cells} cells but the value is ${text.length} characters`,
+      );
+    }
+    const placement = place(fieldId, page, rect, text, style);
     placement.cells = combCells(rect, field.comb, text);
     out.push(placement);
     return;
@@ -124,21 +202,21 @@ function placeField(
 
   if (field.type === "currency" && field.cents) {
     const { dollars, cents } = splitCents(text);
-    out.push(base(fieldId, page, rect, dollars, style));
-    const centsStyle = { ...style, ...field.cents.style };
-    out.push(base(`${fieldId}#cents`, page, field.cents.rect as Rect, cents, centsStyle));
+    out.push(place(fieldId, page, rect, dollars, style));
+    const centsStyle = resolveStyle(template, field, field.cents.style);
+    out.push(place(`${fieldId}#cents`, page, field.cents.rect as Rect, cents, centsStyle));
     return;
   }
 
-  out.push(base(fieldId, page, rect, text, style));
+  out.push(place(fieldId, page, rect, text, style));
 }
 
-function base(
+function place(
   fieldId: string,
   page: number,
   rect: Rect,
   text: string,
-  style: typeof STYLE_FALLBACK & Style,
+  style: ResolvedStyle,
 ): PlacedText {
   return {
     fieldId,
@@ -149,6 +227,11 @@ function base(
     size: style.size,
     color: style.color,
     align: style.align,
+    vAlign: style.vAlign,
+    padding: { ...style.padding },
+    overflow: style.overflow,
+    minSize: style.minSize,
+    lineHeight: style.lineHeight,
   };
 }
 
@@ -219,9 +302,9 @@ function placeRepeat(
     for (const rowField of group.row.fields) {
       const summary = summariseSpill(rowField, spilled, data, group.continuation.title);
       if (summary === undefined) continue;
-      const style = { ...STYLE_FALLBACK, ...template.defaults?.style, ...rowField.style };
+      const style = resolveStyle(template, rowField);
       const rect = translate(rowField.rect as Rect, group.origin[0], dy);
-      out.push(base(`${group.id}.overflow.${rowField.id}`, group.page, rect, summary, style));
+      out.push(place(`${group.id}.overflow.${rowField.id}`, group.page, rect, summary, style));
     }
   }
 }

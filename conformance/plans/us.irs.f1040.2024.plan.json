@@ -1,0 +1,622 @@
+{
+  "planVersion": "1.0.0",
+  "templateId": "us.irs.f1040.2024",
+  "templateRevision": "fixture-2024.1",
+  "taxYear": 2024,
+  "source": {
+    "filename": "f1040-p1.pdf",
+    "sha256": "516ee91ccff56894518b15e30ca81d3e74d209390e0244395b7878a91cec4122",
+    "pageCount": 1
+  },
+  "geometry": {
+    "unit": "pt",
+    "origin": "top-left",
+    "pages": [
+      {
+        "width": 612,
+        "height": 792
+      }
+    ]
+  },
+  "placements": [
+    {
+      "fieldId": "p1.firstName",
+      "page": 0,
+      "rect": [
+        36,
+        88,
+        190,
+        16
+      ],
+      "text": "Dana R",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.lastName",
+      "page": 0,
+      "rect": [
+        232,
+        88,
+        190,
+        16
+      ],
+      "text": "Whitfield",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.ssn",
+      "page": 0,
+      "rect": [
+        432,
+        88,
+        144,
+        16
+      ],
+      "text": "412889017",
+      "font": "Courier",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15,
+      "cells": [
+        {
+          "x": 432,
+          "width": 14.222222222222221,
+          "char": "4"
+        },
+        {
+          "x": 446.22222222222223,
+          "width": 14.222222222222221,
+          "char": "1"
+        },
+        {
+          "x": 460.44444444444446,
+          "width": 14.222222222222221,
+          "char": "2"
+        },
+        {
+          "x": 482.6666666666667,
+          "width": 14.222222222222221,
+          "char": "8"
+        },
+        {
+          "x": 496.8888888888889,
+          "width": 14.222222222222221,
+          "char": "8"
+        },
+        {
+          "x": 519.1111111111111,
+          "width": 14.222222222222221,
+          "char": "9"
+        },
+        {
+          "x": 533.3333333333334,
+          "width": 14.222222222222221,
+          "char": "0"
+        },
+        {
+          "x": 547.5555555555555,
+          "width": 14.222222222222221,
+          "char": "1"
+        },
+        {
+          "x": 561.7777777777778,
+          "width": 14.222222222222221,
+          "char": "7"
+        }
+      ]
+    },
+    {
+      "fieldId": "p1.status.mfj",
+      "page": 0,
+      "rect": [
+        130,
+        132,
+        10,
+        10
+      ],
+      "text": "X",
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.address",
+      "page": 0,
+      "rect": [
+        36,
+        168,
+        386,
+        16
+      ],
+      "text": "1180 Calder Avenue",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.apt",
+      "page": 0,
+      "rect": [
+        432,
+        168,
+        144,
+        16
+      ],
+      "text": "Apt 4B",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line1a",
+      "page": 0,
+      "rect": [
+        462,
+        232,
+        92,
+        14
+      ],
+      "text": "97250",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line1a#cents",
+      "page": 0,
+      "rect": [
+        556,
+        232,
+        30,
+        14
+      ],
+      "text": "50",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line2b",
+      "page": 0,
+      "rect": [
+        462,
+        254,
+        92,
+        14
+      ],
+      "text": "412",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line2b#cents",
+      "page": 0,
+      "rect": [
+        556,
+        254,
+        30,
+        14
+      ],
+      "text": "18",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line3b",
+      "page": 0,
+      "rect": [
+        462,
+        276,
+        92,
+        14
+      ],
+      "text": "1875",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line3b#cents",
+      "page": 0,
+      "rect": [
+        556,
+        276,
+        30,
+        14
+      ],
+      "text": "00",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line8",
+      "page": 0,
+      "rect": [
+        462,
+        298,
+        92,
+        14
+      ],
+      "text": "48806",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line8#cents",
+      "page": 0,
+      "rect": [
+        556,
+        298,
+        30,
+        14
+      ],
+      "text": "95",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line9",
+      "page": 0,
+      "rect": [
+        462,
+        320,
+        92,
+        14
+      ],
+      "text": "148344",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line9#cents",
+      "page": 0,
+      "rect": [
+        556,
+        320,
+        30,
+        14
+      ],
+      "text": "63",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line11",
+      "page": 0,
+      "rect": [
+        462,
+        342,
+        92,
+        14
+      ],
+      "text": "144844",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line11#cents",
+      "page": 0,
+      "rect": [
+        556,
+        342,
+        30,
+        14
+      ],
+      "text": "63",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line25a",
+      "page": 0,
+      "rect": [
+        462,
+        400,
+        92,
+        14
+      ],
+      "text": "11200",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "right",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.line25a#cents",
+      "page": 0,
+      "rect": [
+        556,
+        400,
+        30,
+        14
+      ],
+      "text": "25",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "center",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.occupation",
+      "page": 0,
+      "rect": [
+        36,
+        716,
+        220,
+        16
+      ],
+      "text": "Consulting engineer",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "shrink",
+      "minSize": 6,
+      "lineHeight": 1.15
+    },
+    {
+      "fieldId": "p1.signDate",
+      "page": 0,
+      "rect": [
+        432,
+        716,
+        144,
+        16
+      ],
+      "text": "03/14/2025",
+      "font": "Helvetica",
+      "size": 9,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "top": 0,
+        "right": 4,
+        "bottom": 0,
+        "left": 3
+      },
+      "overflow": "error",
+      "minSize": 6,
+      "lineHeight": 1.15
+    }
+  ],
+  "statements": [],
+  "diagnostics": []
+}
