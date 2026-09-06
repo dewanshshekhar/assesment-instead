@@ -1,0 +1,98 @@
+{
+  "$comment": "The same return, in a deliberately different shape: different key names, different nesting, expenses keyed by name instead of a list filtered by IRS line number. Only examples/bindings/alt-shape.json changes to print from it.",
+  "filer": {
+    "displayName": "Dana R Whitfield",
+    "taxId": "412-88-9017"
+  },
+  "soleProprietorships": [
+    {
+      "code": "biz-1",
+      "activity": "Engineering consulting services",
+      "naics": "541330",
+      "legalName": "Whitfield Structural Consulting",
+      "fein": "88-3310542",
+      "premises": {
+        "line1": "1180 Calder Avenue",
+        "line2": "Providence, RI 02906"
+      },
+      "basis": "CASH",
+      "participatedMaterially": true,
+      "receipts": {
+        "gross": 128400.0,
+        "returns": 2150.0,
+        "net": 126250.0,
+        "costOfGoods": 0,
+        "profit": 126250.0,
+        "other": 0,
+        "total": 126250.0
+      },
+      "deductions": {
+        "advertising": 4200.0,
+        "carAndTruck": 6875.4,
+        "contractLabor": 18500.0,
+        "depreciation": 9240.0,
+        "insurance": 3120.75,
+        "legalAndProfessional": 5400.0,
+        "officeExpense": 2280.15,
+        "rentVehicles": 1450.0,
+        "rentProperty": 24000.0,
+        "repairs": 1875.6,
+        "supplies": 3960.25,
+        "utilities": 4310.9
+      },
+      "miscDeductions": [
+        {
+          "label": "Bank and merchant service fees",
+          "value": 640.2
+        },
+        {
+          "label": "Engineering software subscriptions",
+          "value": 3180.0
+        },
+        {
+          "label": "Professional association dues",
+          "value": 450.0
+        },
+        {
+          "label": "Continuing education and seminars",
+          "value": 1250.0
+        },
+        {
+          "label": "Postage and courier",
+          "value": 318.45
+        },
+        {
+          "label": "Reference standards and codes",
+          "value": 875.0
+        },
+        {
+          "label": "Website hosting and domains",
+          "value": 288.6
+        },
+        {
+          "label": "Business gifts",
+          "value": 175.0
+        },
+        {
+          "label": "Field equipment calibration",
+          "value": 540.0
+        },
+        {
+          "label": "Printing and reprographics",
+          "value": 962.3
+        },
+        {
+          "label": "Telephone and internet",
+          "value": 1440.0
+        }
+      ],
+      "rollup": {
+        "miscTotal": 10119.55,
+        "deductionsTotal": 95332.6,
+        "homeOffice": 0,
+        "profitBeforeHome": 30917.4,
+        "profitNet": 30917.4
+      }
+    }
+  ]
+}

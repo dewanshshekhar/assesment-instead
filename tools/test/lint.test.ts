@@ -15,8 +15,8 @@ const data = read<Json>("../../examples/sample-return.json");
 const base = read<AnnotationTemplate>("../../templates/us.irs.f1040.2024.json");
 const scheduleC = read<AnnotationTemplate>("../../templates/us.irs.f1040sc.2025.json");
 
-const codes = (template: AnnotationTemplate, withData = false) =>
-  lint(template, { schema, data: withData ? data : undefined }).map((d) => d.code);
+const codes = (template: AnnotationTemplate, withData = false, strictData = false) =>
+  lint(template, { schema, data: withData ? data : undefined, strictData }).map((d) => d.code);
 
 const form2025 = read<AnnotationTemplate>("../../templates/us.irs.f1040.2025.json");
 
@@ -95,10 +95,15 @@ test("warns about a radio group with a single member", () => {
   assert.ok(codes(broken).includes("radio/singleton"));
 });
 
-test("warns when a reference selects nothing in the sample data", () => {
+test("reports an unresolved reference only when asked", () => {
   const broken = structuredClone(base) as any;
   broken.entries[0].value = { ref: "@.taxpayer.middleName" };
-  assert.ok(codes(broken, true).includes("reference/unresolved"));
+
+  // An empty line is the normal case on a tax form, so this is not reported by
+  // default; it is a binding-time aid for a fixture meant to exercise
+  // every field.
+  assert.ok(!codes(broken, true).includes("reference/unresolved"));
+  assert.ok(codes(broken, true, true).includes("reference/unresolved"));
 });
 
 test("surfaces the plan's own diagnostics when sample data is supplied", () => {

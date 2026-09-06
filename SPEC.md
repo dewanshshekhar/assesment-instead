@@ -28,7 +28,7 @@ without sharing any code with the system that produced the data.
 
 - **Tax calculation.** A template never computes a tax figure. If line 9 is
   the sum of lines 1a through 8, the *calculation engine* produces that total
-  and the template references it. See §5.6.
+  and the template references it. See §5.7.
 - **Data validation.** Whether an SSN is well-formed is the data producer's
   concern.
 - **Drawing.** A conforming implementation may render with any PDF library, or
@@ -248,7 +248,76 @@ Against `examples/sample-return.json`:
 | `$.taxReturn.schedules.scheduleC[*].expenses[*].amount` | every expense of every business |
 | `@.income.grossReceipts` (bound to biz-1) | `128400` |
 
-### 5.6 Why totals are referenced, not computed
+### 5.6 Canonical concepts and binding profiles
+
+A reference names a path into *one* data set. That is enough to print a form,
+and it is why a template written against last quarter's return model breaks
+when the model changes.
+
+A field may instead name a **concept** from a canonical model:
+
+```jsonc
+{ "kind": "field", "id": "sc.line1", "type": "currency",
+  "rect": [475.2, 264, 100.8, 12],
+  "value": { "concept": "business.income.grossReceipts" } }
+```
+
+and the template — or a profile supplied at resolution time — says where that
+lives:
+
+```jsonc
+"model": { "id": "us.tax.canonical", "version": "1.0.0" },
+"bindings": {
+  "business.income.grossReceipts": { "ref": "@.income.grossReceipts" },
+  "business.expense.advertising":  { "ref": "@.expenses[?(@.line == '8')].amount",
+                                     "aggregate": "sum" }
+}
+```
+
+The split is the point. A **template** describes a form: where the boxes are,
+how they are ruled, what belongs in them. A **binding profile** describes a
+data set: where those things live in it. They change for different reasons and
+are usually owned by different people, so a form that must be re-pointed at a
+new return model is one block of edits rather than a hundred.
+
+`spec/binding-profile.schema.json` is the normative schema for a profile:
+
+```jsonc
+{
+  "profileVersion": "1.0.0",
+  "for": "us.irs.f1040sc.2025",
+  "model": { "id": "us.tax.canonical", "version": "1.0.0" },
+  "bindings": { /* concept -> ValueSpec */ }
+}
+```
+
+A profile MUST be rejected when its `for` names a different template (unless it
+is `"*"`) or its `model` differs from the template's. Applying the wrong
+profile would bind concepts to values from the wrong shape, and the output
+would look entirely plausible.
+
+**Where a concept may appear.** Anywhere a value or collection is selected:
+`value.concept`, a repeat's `over`, and `bind.root`. A reference always begins
+with `$`, `@` or `/`; a concept name may not, so no declaration is needed to
+tell them apart.
+
+**Layering.** A field's own keys are applied over the binding it resolves to.
+That is what lets several boxes share one concept and differ only in how they
+read it — five accounting-method checkboxes name
+`business.accountingMethod` and differ by `equals`. Without layering, every one
+of them would be marked, because the underlying string is truthy.
+
+**Concepts are optional.** A template may bind entirely by reference; the
+Form 1040 example does. Concepts earn their place when a form outlives a data
+model, which in a tax product is most of the time.
+
+The worked demonstration is in `examples/`: `alt-shape-return.json` holds the
+same return under different key names and different nesting — expenses keyed by
+name rather than a list filtered by IRS line number — and
+`bindings/alt-shape.json` binds the concepts to it. The Schedule C template
+prints byte-identical output from both, unedited.
+
+### 5.7 Why totals are referenced, not computed
 
 Form 1040 line 9 is the sum of lines 1a through 8. A template could express
 that as arithmetic over other fields. It MUST NOT.
@@ -417,13 +486,13 @@ total. A specification that let templates compute totals would therefore print
 the wrong number — summing eight rounded rows on Schedule C, Part V of the
 worked example gives 10,119 where line 48 correctly reads 10,120. The template
 references a total the calculation engine produced from exact figures, which
-is the concrete reason for the non-goal in §1.2 and §5.6.
+is the concrete reason for the non-goal in §1.2 and §5.7.
 
 ### 8.2 Percentages
 
 A `percentage` value is taken to be **already in percent units**: `12.5`
 prints as `12.5`. Scaling a ratio into a percentage is arithmetic, and
-arithmetic belongs in the calculation engine (§5.6).
+arithmetic belongs in the calculation engine (§5.7).
 
 ### 8.3 Dates
 
@@ -720,7 +789,7 @@ Codes defined by this version:
 | `schema/invalid` | the template does not satisfy the template schema |
 | `plan/invalid` | a render plan does not satisfy the plan schema |
 | `reference/syntax` | a reference is outside the grammar of §5.3 |
-| `reference/unresolved` | a reference selects nothing in the sample data |
+| `reference/unresolved` | a reference selects nothing in the sample data (opt-in; see below) |
 | `value/ambiguous` | multi-valued reference with no aggregate |
 | `value/not-numeric` | numeric aggregate over a non-numeric node |
 | `comb/no-room`, `comb/narrow`, `comb/gap-past-end` | comb geometry is unusable |
@@ -735,9 +804,19 @@ Codes defined by this version:
 | `layout/overflow` | text does not fit, with `overflow: "error"` |
 | `source/digest-mismatch` | the PDF is not the one the template was measured against |
 | `bind/unresolved` | `bind.root` selects nothing |
+| `binding/unbound` | a concept is used that no binding defines |
+| `binding/unused` | a binding no field names |
+| `binding/no-model` | concepts are used but no `model` is declared |
 
 A field that produces an error is **not drawn**. An implementation MUST NOT
 print a partial or coerced value in its place.
+
+`reference/unresolved` is reported only when a validator is asked for it. On a
+tax form an absent value is the normal case: a complete template binds every
+line and any one return uses a handful of them. Reported by default it would
+fire on correct templates, and a warning an author learns to ignore is worse
+than no warning. It is worth switching on against a fixture chosen to exercise
+every field.
 
 `comb/missing-spec` and `value/empty` report documents the schema already
 rejects. They exist because an implementation may be handed a template that

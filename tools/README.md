@@ -38,7 +38,7 @@ step and no transpiler config.
 ```bash
 npm install
 npm run demo      # fixtures, lint, render, compile a plan, check it, draw from it
-npm test          # 91 tests
+npm test          # 99 tests
 ```
 
 Or directly:
@@ -50,8 +50,8 @@ node --experimental-strip-types src/cli.ts <command> [options]
 | Command | What it does |
 |---------|--------------|
 | `fixtures [--out dir]` | Generate the example blank forms and print their digests |
-| `lint <template...> [--data f]` | Validate against the schema and the semantic rules; with `--data`, also resolve every reference and build a plan |
-| `plan <template> --data f [--out f]` | Compile a template to a render plan |
+| `lint <template...> [--data f] [--bindings f] [--strict-data]` | Validate against the schema and the semantic rules; with `--data`, also build a plan; `--strict-data` additionally reports references that select nothing |
+| `plan <template> --data f [--bindings f] [--out f]` | Compile a template to a render plan |
 | `check-plan <plan.json...>` | Validate a plan against `spec/render-plan.schema.json`, the way a consumer would before drawing it |
 | `render <template> --data f --out f.pdf` | Compile and draw in one step |
 | `render --plan f.json --out f.pdf` | Draw from a serialised plan, with no template in reach |
@@ -109,6 +109,20 @@ prints each id inside its own box. Open it next to the blank form and read off
 which id belongs to which line. That is how both official templates were bound,
 and it is what caught a checkbox mapped to the wrong line and an EIN comb whose
 cell width was wrong.
+
+## Binding profiles
+
+A template whose fields name concepts reads its data through `bindings`. A
+profile passed with `--bindings` overrides them, which is how one form prints
+from a differently shaped return:
+
+```bash
+npm run render:alt    # us.irs.f1040sc.2025 against examples/alt-shape-return.json
+```
+
+A profile is refused when its `for` names another template or its `model`
+differs from the template's — applying the wrong one would bind concepts to
+the wrong values and the output would look entirely plausible.
 
 ## The browser consumer
 

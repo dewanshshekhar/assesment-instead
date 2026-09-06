@@ -232,7 +232,32 @@ The fixture Form 1040 stays, for one reason: neither official 2025 form rules
 dollars and cents into separate columns, and that feature needs a form to
 demonstrate it on.
 
-### 1.19 `additionalProperties: false` everywhere
+### 1.19 Concepts and bindings, so a form outlives a data model
+
+A reference names a path into one data set, which quietly couples every
+template to the shape of whatever the calculation engine happens to emit today.
+In a tax product that model changes; a hundred templates should not.
+
+So a field may name a canonical concept instead, and a `bindings` block — in
+the template, or in a profile supplied at resolution time — says where that
+concept lives. The Schedule C template names concepts throughout;
+`examples/alt-shape-return.json` is the same return reshaped, and
+`examples/bindings/alt-shape.json` prints it byte-identically with no field
+edited.
+
+Concepts are optional. The Form 1040 template binds by reference throughout,
+because a direct path is the clearer thing to read when there is no second
+shape to serve. Making concepts mandatory would have added a layer of
+indirection to every template to solve a problem only some of them have.
+
+The design decision inside the design decision: a field's own keys layer *over*
+the binding it resolves to. Five accounting-method checkboxes share one concept
+and differ only by `equals`. The first implementation replaced the field's spec
+wholesale, which silently marked all five, because the underlying value is a
+truthy string. Byte-comparing the plan before and after the migration is what
+caught it.
+
+### 1.20 `additionalProperties: false` everywhere
 
 A misspelled `alignment` is a silent no-op in a permissive schema and a
 caught error in a strict one. Strictness now is what makes it safe to add
@@ -244,7 +269,7 @@ properties later.
 
 | Not done | Why |
 |----------|-----|
-| Tax calculation | Belongs to the calculation engine; two implementations of one rule will diverge (SPEC §1.2, §5.6) |
+| Tax calculation | Belongs to the calculation engine; two implementations of one rule will diverge (SPEC §1.2, §5.7) |
 | Data-set schema | The template adapts to the data, not the reverse |
 | Reading values back out of a filled PDF | A different problem (extraction), and a different specification |
 | Locale/i18n | U.S. forms only in version 1; see §4.6 |

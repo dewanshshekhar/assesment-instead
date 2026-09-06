@@ -11,12 +11,24 @@ import Ajv2020 from "ajv/dist/2020.js";
 import type { AnnotationTemplate, Diagnostic, Field } from "../../spec/types.ts";
 import { parseReference, resolve, ReferenceSyntaxError, type Json } from "./reference.ts";
 import { buildPlan } from "./plan.ts";
+import type { ValueSpec } from "./value.ts";
 import type { Rect } from "./layout.ts";
 
 export interface LintOptions {
   /** When given, references are also resolved against it and a plan is built. */
   data?: Json;
   schema?: unknown;
+  /** Concept bindings overriding the template's own, as at render time. */
+  bindings?: Record<string, ValueSpec>;
+  /**
+   * Report references that select nothing in `data`.
+   *
+   * Off by default. On a tax form an absent value is the normal case — a
+   * complete template binds every line and any one return uses a handful — so
+   * this only means something when `data` is a fixture chosen to exercise
+   * every field. Left on, it cries wolf and trains an author to ignore it.
+   */
+  strictData?: boolean;
 }
 
 export function lint(template: AnnotationTemplate, options: LintOptions = {}): Diagnostic[] {
@@ -28,7 +40,10 @@ export function lint(template: AnnotationTemplate, options: LintOptions = {}): D
     if (out.some((d) => d.severity === "error")) return out;
   }
 
+  const bindings = { ...template.bindings, ...options.bindings };
+
   checkIdentifiers(template, out);
+  checkBindings(template, bindings, out);
   checkGeometry(template, out);
   checkReferences(template, out);
   checkCombs(template, out);
@@ -36,7 +51,7 @@ export function lint(template: AnnotationTemplate, options: LintOptions = {}): D
   checkOverlaps(template, out);
 
   if (options.data !== undefined) {
-    checkAgainstData(template, options.data, out);
+    checkAgainstData(template, options.data, bindings, options.strictData ?? false, out);
   }
 
   return out;
@@ -159,6 +174,62 @@ function assertInside(
   }
 }
 
+/**
+ * A concept a field names must be bound, and a binding nobody names is dead
+ * weight that will quietly rot. Both are worth saying at authoring time.
+ */
+function checkBindings(
+  template: AnnotationTemplate,
+  bindings: Record<string, ValueSpec>,
+  out: Diagnostic[],
+): void {
+  const used = new Set<string>();
+
+  const conceptsUsed: [string, string][] = [];
+  for (const { field, path } of eachField(template)) {
+    const c = (field.value as ValueSpec).concept;
+    if (c !== undefined) conceptsUsed.push([c, path]);
+  }
+  for (const entry of template.entries) {
+    if (entry.kind === "repeat" && !/^[$@/]/.test(entry.over)) conceptsUsed.push([entry.over, entry.id]);
+  }
+  if (template.bind?.root && !/^[$@/]/.test(template.bind.root)) {
+    conceptsUsed.push([template.bind.root, "bind.root"]);
+  }
+
+  for (const [concept, path] of conceptsUsed) {
+    used.add(concept);
+
+    if (!bindings[concept]) {
+      out.push({
+        severity: "error",
+        code: "binding/unbound",
+        entryId: path,
+        message: `concept '${concept}' is not defined by any binding`,
+      });
+    }
+  }
+
+  for (const concept of Object.keys(bindings)) {
+    if (!used.has(concept)) {
+      out.push({
+        severity: "warning",
+        code: "binding/unused",
+        entryId: `bindings.${concept}`,
+        message: `binding '${concept}' is never used by this template`,
+      });
+    }
+  }
+
+  if (Object.keys(bindings).length > 0 && !template.model) {
+    out.push({
+      severity: "warning",
+      code: "binding/no-model",
+      message: "the template uses concepts but declares no `model`, so nothing says which vocabulary they come from",
+    });
+  }
+}
+
 function checkReferences(template: AnnotationTemplate, out: Diagnostic[]): void {
   const check = (ref: string, entryId: string, requiresAggregate: boolean, hasAggregate: boolean) => {
     try {
@@ -181,7 +252,25 @@ function checkReferences(template: AnnotationTemplate, out: Diagnostic[]): void 
     }
   };
 
-  if (template.bind?.root) check(template.bind.root, "bind.root", false, false);
+  if (template.bind?.root && /^[$@/]/.test(template.bind.root)) {
+    check(template.bind.root, "bind.root", false, false);
+  }
+
+  // A binding's reference is a reference like any other, and a mistake in one
+  // is worse: it is shared by every field that names the concept.
+  //
+  // The one exception is the binding `bind.root` names. Selecting the subject
+  // of a form instance is a filter by nature, and SPEC 5.4 already defines
+  // what a multi-valued root means, so demanding an aggregate there would be
+  // asking an author to restate a rule the specification has settled.
+  const rootConcept = template.bind?.root;
+  for (const [concept, spec] of Object.entries(template.bindings ?? {})) {
+    const isRoot = concept === rootConcept;
+    if (spec.ref) check(spec.ref, `bindings.${concept}`, !isRoot, spec.aggregate !== undefined);
+    for (const fallback of spec.fallback ?? []) {
+      check(fallback, `bindings.${concept}`, !isRoot, spec.aggregate !== undefined);
+    }
+  }
 
   for (const { field, path } of eachField(template)) {
     const value = field.value;
@@ -192,7 +281,11 @@ function checkReferences(template: AnnotationTemplate, out: Diagnostic[]): void 
   }
 
   for (const entry of template.entries) {
-    if (entry.kind === "repeat") check(entry.over, entry.id, false, false);
+    // A concept is checked by checkBindings; only a literal reference is
+    // parsed here.
+    if (entry.kind === "repeat" && /^[$@/]/.test(entry.over)) {
+      check(entry.over, entry.id, false, false);
+    }
   }
 }
 
@@ -282,25 +375,33 @@ function intersects(a: Rect, b: Rect): boolean {
   return a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
 }
 
-function checkAgainstData(template: AnnotationTemplate, data: Json, out: Diagnostic[]): void {
-  const binding = template.bind?.root ? (resolve(template.bind.root, { root: data })[0] ?? data) : data;
+function checkAgainstData(
+  template: AnnotationTemplate,
+  data: Json,
+  bindings: Record<string, ValueSpec>,
+  strictData: boolean,
+  out: Diagnostic[],
+): void {
+  const declaredRoot = template.bind?.root;
+  const rootRef = declaredRoot && (/^[$@/]/.test(declaredRoot) ? declaredRoot : bindings[declaredRoot]?.ref);
+  const binding = rootRef ? (resolve(rootRef, { root: data })[0] ?? data) : data;
+
+  // The plan's own diagnostics are always reported; the per-reference sweep
+  // below is the opt-in part.
+  out.push(...buildPlan(template, data, { bindings }).diagnostics);
+  if (!strictData) return;
 
   for (const { field, path, inRepeat } of eachField(template)) {
-    const ref = field.value.ref;
-    if (!ref || field.value.default !== undefined || (field.value.fallback ?? []).length > 0) continue;
+    const spec = field.value.concept ? bindings[field.value.concept] : field.value;
+    const ref = spec?.ref;
+    if (spec === undefined) continue;
+    if (!ref || spec.default !== undefined || (spec.fallback ?? []).length > 0) continue;
     // A row field's '@' resolves against the current item, not against the
     // template binding, so it cannot be checked here; the plan diagnostics
     // appended below cover it instead.
     if (inRepeat && ref.startsWith("@")) continue;
 
     try {
-      // This check exists to catch a mistyped path, not to report that a line
-      // is empty. A wildcard or filter is *expected* to match nothing for some
-      // returns -- a complete Schedule C template binds every named expense
-      // line, and any one taxpayer uses a handful of them -- so only a
-      // single-valued reference is worth warning about.
-      if (parseReference(ref).multi) continue;
-
       if (resolve(ref, { root: data, current: binding }).length === 0) {
         out.push({
           severity: "warning",
@@ -314,5 +415,4 @@ function checkAgainstData(template: AnnotationTemplate, data: Json, out: Diagnos
     }
   }
 
-  out.push(...buildPlan(template, data).diagnostics);
 }

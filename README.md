@@ -14,6 +14,7 @@ is implementable, and the authoring tools you would want alongside it.
 | **[`DECISIONS.md`](DECISIONS.md)** | Why it is shaped this way, what it deliberately does not do, what comes next |
 | [`spec/annotation-template.schema.json`](spec/annotation-template.schema.json) | JSON Schema for a template (draft 2020-12) |
 | [`spec/render-plan.schema.json`](spec/render-plan.schema.json) | JSON Schema for the render plan — the interchange format |
+| [`spec/binding-profile.schema.json`](spec/binding-profile.schema.json) | JSON Schema for a binding profile |
 | [`spec/types.ts`](spec/types.ts) | The same model as typed interfaces |
 | [`templates/us.irs.f1040.2025.json`](templates/us.irs.f1040.2025.json) | The official 2025 Form 1040, annotated |
 | [`templates/us.irs.f1040sc.2025.json`](templates/us.irs.f1040sc.2025.json) | The official 2025 Schedule C, annotated |
@@ -59,6 +60,10 @@ produce byte-identical plans for the same input.
 - **Referencing a value in a deeply nested data set** — RFC 6901 JSON Pointer
   as the canonical form, with a small, strictly-defined JSONPath subset for
   filters and wildcards.
+- **Surviving a change to the data model** — a field may name a canonical
+  *concept* instead of a path, and a binding profile says where that concept
+  lives in a given return. Re-pointing a whole form at a new model is one block
+  of edits, not a hundred.
 - **The shapes real forms actually have** — one-character-per-cell comb boxes
   for SSN and EIN, separate cents columns, mutually exclusive checkboxes,
   repeating expense rows, and what happens when a taxpayer has more expenses
@@ -116,7 +121,7 @@ Requires Node 22.6 or newer. No build step.
 cd tools
 npm install
 npm run demo     # fixtures, lint, render, compile a plan, check it, draw from it
-npm test         # 91 tests
+npm test         # 99 tests
 ```
 
 `npm run demo` walks the whole pipeline. It fills the **official 2025 Form 1040
@@ -128,6 +133,24 @@ and no data set. The last step builds `out/browser-demo.html`.
 That Schedule C has eleven other-expenses and nine ruled rows in Part V, so it
 also produces a continuation statement: the last printed row carries the total
 of what spilled, and the spilled rows are listed in full on an appended page.
+
+## One form, two data shapes
+
+`templates/us.irs.f1040sc.2025.json` binds nothing to a path directly. Its
+fields name concepts — `business.income.grossReceipts`,
+`business.expense.advertising` — and a `bindings` block says where those live.
+
+`examples/alt-shape-return.json` is the same return under different key names
+and different nesting: expenses keyed by name rather than a list filtered by
+IRS line number, a different subject selector, different totals object.
+`examples/bindings/alt-shape.json` binds the concepts to it.
+
+```bash
+npm run render:alt      # same template, other shape, no field edited
+```
+
+The two produce **byte-identical** output. A template describes a form; a
+profile describes a data set; they change for different reasons.
 
 ## Someone else's renderer
 
@@ -161,6 +184,9 @@ templates/
 examples/
   sample-return.json                a deeply nested return, internally consistent
 examples/
+  sample-return.json                a deeply nested return, internally consistent
+  alt-shape-return.json             the same return, deliberately reshaped
+  bindings/alt-shape.json           concepts bound to that other shape
   browser/                          a second, independent renderer
 conformance/
   plans/                            golden render plans, asserted byte-for-byte

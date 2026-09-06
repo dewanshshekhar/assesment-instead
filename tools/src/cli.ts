@@ -3,8 +3,8 @@
  * Command line entry point.
  *
  *   fixtures [--out dir]                       generate the example blank forms
- *   lint <template...> [--data f]              validate templates
- *   plan <template> --data f [--out f]         compile a template to a render plan
+ *   lint <template...> [--data f] [--bindings f] [--strict-data]  validate templates
+ *   plan <template> --data f [--bindings f] [--out f]   compile to a render plan
  *   check-plan <plan.json>                     validate a plan against its schema
  *   render (<template> --data f | --plan f) --out f.pdf
  *   import <pdf> --id ... --out f.json         draft a template from an AcroForm
@@ -17,7 +17,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
-import type { AnnotationTemplate, Diagnostic, RenderPlan } from "../../spec/types.ts";
+import type { AnnotationTemplate, BindingProfile, Diagnostic, RenderPlan } from "../../spec/types.ts";
 import { buildPlan } from "./plan.ts";
 import { lint } from "./lint.ts";
 import { render, appendStatements, sha256 } from "./render.ts";
@@ -58,6 +58,32 @@ function positional(args: string[]): string[] {
     else out.push(args[i]);
   }
   return out;
+}
+
+/**
+ * Loads a binding profile, refusing one written for another template: applying
+ * the wrong profile would bind concepts to values from the wrong return shape,
+ * and the output would look plausible.
+ */
+async function loadBindings(
+  args: string[],
+  template?: AnnotationTemplate,
+): Promise<Record<string, never> | BindingProfile["bindings"]> {
+  const path = flag(args, "bindings");
+  if (!path) return {};
+
+  const profile = await readJson<BindingProfile>(path);
+  if (template && profile.for !== "*" && profile.for !== template.template.id) {
+    throw new Error(
+      `binding profile is written for '${profile.for}' but the template is '${template.template.id}'`,
+    );
+  }
+  if (template?.model && profile.model.id !== template.model.id) {
+    throw new Error(
+      `binding profile targets model '${profile.model.id}' but the template uses '${template.model.id}'`,
+    );
+  }
+  return profile.bindings;
 }
 
 function report(label: string, diagnostics: Diagnostic[]): number {
@@ -110,8 +136,9 @@ async function cmdLint(args: string[]): Promise<number> {
   let errors = 0;
   for (const path of templates) {
     const template = await readJson<AnnotationTemplate>(path);
+    const bindings = await loadBindings(args, template);
     process.stdout.write(`\n${template.template.id}  (${path})\n`);
-    errors += report("lint", lint(template, { data, schema }));
+    errors += report("lint", lint(template, { data, schema, bindings, strictData: has(args, "strict-data") }));
   }
   return errors === 0 ? 0 : 1;
 }
@@ -123,7 +150,7 @@ async function cmdPlan(args: string[]): Promise<number> {
 
   const template = await readJson<AnnotationTemplate>(templatePath);
   const data = await readJson<Json>(dataPath);
-  const plan = buildPlan(template, data);
+  const plan = buildPlan(template, data, { bindings: await loadBindings(args, template) });
 
   const out = flag(args, "out");
   const json = `${JSON.stringify(plan, null, 2)}\n`;
@@ -184,7 +211,10 @@ async function cmdRender(args: string[]): Promise<number> {
     if (!templatePath || !dataPath) {
       throw new Error("render requires <template> --data <file>, or --plan <file.json>");
     }
-    plan = buildPlan(await readJson<AnnotationTemplate>(templatePath), await readJson<Json>(dataPath));
+    const template = await readJson<AnnotationTemplate>(templatePath);
+    plan = buildPlan(template, await readJson<Json>(dataPath), {
+      bindings: await loadBindings(args, template),
+    });
   }
 
   const sourcePath = flag(args, "source") ?? findSourcePdf(plan.source.filename);

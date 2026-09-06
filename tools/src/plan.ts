@@ -29,7 +29,50 @@ import { combCells, translate, type Rect } from "./layout.ts";
 
 export const PLAN_VERSION = "1.0.0";
 
+export interface PlanOptions {
+  /**
+   * Concept bindings that override the template's own. This is how one
+   * template prints from a differently shaped data set: swap the profile,
+   * change nothing else.
+   */
+  bindings?: Record<string, ValueSpec>;
+}
+
 type Padding = { top: number; right: number; bottom: number; left: number };
+
+interface PlanContext {
+  template: AnnotationTemplate;
+  bindings: Record<string, ValueSpec>;
+  data: Json;
+  diagnostics: Diagnostic[];
+}
+
+/**
+ * Expands a concept into the ValueSpec bound to it.
+ *
+ * A field that names a concept says what it prints; the binding says where
+ * that lives in this particular data set. Keeping the two apart is what lets
+ * a template outlive a change to the return model.
+ *
+ * The field's own keys are layered over the binding, because some of them are
+ * properties of the *box* rather than of the value. Five filing-status
+ * checkboxes share one concept and differ only by their `equals`; dropping
+ * that would mark every one of them, since the underlying string is truthy.
+ */
+function boundValue(ctx: PlanContext, value: ValueSpec, fieldId: string): ValueSpec {
+  if (value.concept === undefined) return value;
+
+  const bound = ctx.bindings[value.concept];
+  if (!bound) {
+    throw new EvaluationError(
+      "binding/unbound",
+      `field '${fieldId}' uses concept '${value.concept}', which no binding defines`,
+    );
+  }
+
+  const { concept: _concept, ...overrides } = value;
+  return { ...bound, ...overrides };
+}
 
 interface ResolvedStyle {
   font: string;
@@ -56,19 +99,25 @@ const STYLE_FALLBACK: Omit<ResolvedStyle, "padding"> = {
   glyph: "X",
 };
 
-export function buildPlan(template: AnnotationTemplate, data: Json): RenderPlan {
+export function buildPlan(
+  template: AnnotationTemplate,
+  data: Json,
+  options: PlanOptions = {},
+): RenderPlan {
   const placements: PlacedText[] = [];
   const statements: ContinuationStatement[] = [];
   const diagnostics: Diagnostic[] = [];
 
-  const binding = resolveBinding(template, data, diagnostics);
+  const bindings = { ...template.bindings, ...options.bindings };
+  const binding = resolveBinding(template, bindings, data, diagnostics);
+  const ctx: PlanContext = { template, bindings, data, diagnostics };
 
   for (const entry of template.entries) {
     try {
       if (entry.kind === "field") {
-        placeField(entry, entry.page, [0, 0], template, data, binding, placements);
+        placeField(entry, entry.page, [0, 0], ctx, binding, placements);
       } else {
-        placeRepeat(entry, template, data, binding, placements, statements, diagnostics);
+        placeRepeat(entry, ctx, binding, placements, statements);
       }
     } catch (error) {
       diagnostics.push(toDiagnostic(entry.id, error));
@@ -88,9 +137,26 @@ export function buildPlan(template: AnnotationTemplate, data: Json): RenderPlan 
   };
 }
 
-function resolveBinding(template: AnnotationTemplate, data: Json, diagnostics: Diagnostic[]): Json {
-  const root = template.bind?.root;
-  if (!root) return data;
+function resolveBinding(
+  template: AnnotationTemplate,
+  bindings: Record<string, ValueSpec>,
+  data: Json,
+  diagnostics: Diagnostic[],
+): Json {
+  const declared = template.bind?.root;
+  if (!declared) return data;
+
+  // Like `over`, this may name a concept: which subject a form instance is
+  // about is as data-shaped a question as any other.
+  const root = /^[$@/]/.test(declared) ? declared : bindings[declared]?.ref;
+  if (!root) {
+    diagnostics.push({
+      severity: "error",
+      code: "binding/unbound",
+      message: `bind.root names concept '${declared}', which no binding defines`,
+    });
+    return data;
+  }
 
   const nodes = resolve(root, { root: data });
   if (nodes.length === 0) {
@@ -156,13 +222,13 @@ function placeField(
   field: Field | Omit<Field, "page">,
   page: number,
   offset: [number, number],
-  template: AnnotationTemplate,
-  data: Json,
+  plan: PlanContext,
   current: Json,
   out: PlacedText[],
   /** Qualified id, so that a row's placements stay distinguishable. */
   fieldId: string = field.id,
 ): void {
+  const { template, data } = plan;
   const ctx = { root: data, current };
 
   if (field.visibleWhen && !conditionHolds(field.visibleWhen, ctx)) return;
@@ -170,7 +236,7 @@ function placeField(
   const style = resolveStyle(template, field);
   const format: Format = { ...template.defaults?.format, ...field.format };
   const rect = translate(field.rect as Rect, offset[0], offset[1]);
-  const value = field.value as ValueSpec;
+  const value = boundValue(plan, field.value as ValueSpec, fieldId);
 
   if (field.type === "checkbox") {
     if (!isChecked(value, evaluate(value, ctx))) return;
@@ -241,14 +307,20 @@ function place(
 
 function placeRepeat(
   group: Extract<Entry, { kind: "repeat" }>,
-  template: AnnotationTemplate,
-  data: Json,
+  plan: PlanContext,
   binding: Json,
   out: PlacedText[],
   statements: ContinuationStatement[],
-  diagnostics: Diagnostic[],
 ): void {
-  const nodes = resolve(group.over, { root: data, current: binding });
+  const { template, data, diagnostics } = plan;
+  const overSpec: ValueSpec = /^[$@/]/.test(group.over)
+    ? { ref: group.over }
+    : boundValue(plan, { concept: group.over }, group.id);
+
+  if (!overSpec.ref) {
+    throw new EvaluationError("binding/unbound", `repeat '${group.id}' has no reference to iterate`);
+  }
+  const nodes = resolve(overSpec.ref, { root: data, current: binding });
   const items = nodes.length === 1 && Array.isArray(nodes[0]) ? (nodes[0] as Json[]) : nodes;
 
   const overflow = group.overflow ?? "error";
@@ -283,16 +355,8 @@ function placeRepeat(
   visible.forEach((item, index) => {
     for (const itemField of group.item.fields) {
       try {
-        placeField(
-          itemField,
-          group.page,
-          offsetFor(index),
-          template,
-          data,
-          item,
-          out,
-          `${group.id}[${index}].${itemField.id}`,
-        );
+        placeField(itemField, group.page, offsetFor(index), plan, item, out,
+          `${group.id}[${index}].${itemField.id}`);
       } catch (error) {
         diagnostics.push(toDiagnostic(`${group.id}[${index}].${itemField.id}`, error));
       }
@@ -300,13 +364,13 @@ function placeRepeat(
   });
 
   if (spilled.length > 0 && group.continuation) {
-    statements.push(buildStatement(group, spilled, data, diagnostics));
+    statements.push(buildStatement(group, spilled, plan));
 
     const [dx, dy] = offsetFor(visible.length);
     let pointerPlaced = false;
 
     for (const itemField of group.item.fields) {
-      const summary = summariseSpill(itemField, spilled, data, group.continuation.title, pointerPlaced);
+      const summary = summariseSpill(itemField, spilled, plan, group.continuation.title, pointerPlaced);
       if (summary === undefined) continue;
       if (isTextual(itemField.type)) pointerPlaced = true;
       const style = resolveStyle(template, itemField);
@@ -332,14 +396,16 @@ function isTextual(type: Field["type"]): boolean {
 function summariseSpill(
   itemField: Omit<Field, "page">,
   spilled: Json[],
-  data: Json,
+  plan: PlanContext,
   title: string,
   pointerPlaced: boolean,
 ): string | undefined {
+  const data = plan.data;
+  const spec = boundValue(plan, itemField.value as ValueSpec, itemField.id);
   if (itemField.type === "currency" || itemField.type === "number") {
     let total = 0;
     for (const item of spilled) {
-      const evaluation = evaluate(itemField.value as ValueSpec, { root: data, current: item });
+      const evaluation = evaluate(spec, { root: data, current: item });
       const n = Number(evaluation.value ?? 0);
       if (Number.isFinite(n)) total += n;
     }
@@ -354,14 +420,15 @@ function summariseSpill(
 function buildStatement(
   group: Extract<Entry, { kind: "repeat" }>,
   spilled: Json[],
-  data: Json,
-  diagnostics: Diagnostic[],
+  plan: PlanContext,
 ): ContinuationStatement {
+  const { data, diagnostics } = plan;
   const columns = group.item.fields.map((f) => f.label ?? f.id);
   const rows = spilled.map((item) =>
     group.item.fields.map((f) => {
       try {
-        const evaluation = evaluate(f.value as ValueSpec, { root: data, current: item });
+        const spec = boundValue(plan, f.value as ValueSpec, f.id);
+        const evaluation = evaluate(spec, { root: data, current: item });
         return formatValue(f.type, evaluation.value, (f.format ?? {}) as Format);
       } catch (error) {
         diagnostics.push(toDiagnostic(`${group.id}.statement.${f.id}`, error));

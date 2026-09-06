@@ -22,6 +22,22 @@ export interface AnnotationTemplate {
   $comment?: string;
   specVersion: SpecVersion;
   template: TemplateIdentity;
+  /**
+   * The canonical model whose concept names this template's fields use.
+   *
+   * Declaring it means a reader can tell which vocabulary `value.concept`
+   * refers to, and a tool can refuse to apply a binding profile written
+   * against a different one.
+   */
+  model?: ModelIdentity;
+  /**
+   * Concept name to data reference. This is the only place a template that
+   * uses concepts touches the shape of a data set, so re-pointing a whole
+   * form at a differently shaped return is one block of edits, not a hundred.
+   *
+   * A profile supplied at resolution time overrides what is written here.
+   */
+  bindings?: Record<string, ValueSpec>;
   /** Style and format values inherited by every field unless overridden. */
   defaults?: { style?: Style; format?: Format };
   /**
@@ -152,8 +168,14 @@ export interface RepeatGroup {
   id: string;
   label?: string;
   page: number;
-  /** Reference to the collection being iterated. MUST resolve to an array. */
-  over: Reference;
+  /**
+   * The collection being iterated. MUST resolve to an array.
+   *
+   * A reference begins with `$`, `@` or `/`; anything else is a concept name
+   * resolved through `bindings`. The two cannot be confused, because a concept
+   * name may not start with those characters.
+   */
+  over: Reference | string;
   /** Top-left corner of the first item's block. */
   origin: [x: number, y: number];
   /**
@@ -202,7 +224,16 @@ export interface RepeatGroup {
 export type Reference = string;
 
 export interface ValueSpec {
-  /** Mutually exclusive with `const`. */
+  /**
+   * A canonical concept name, resolved through the template's `bindings`
+   * (or an overriding profile) to the ValueSpec that actually reads the data.
+   *
+   * Mutually exclusive with `ref` and `const`. A field that names a concept
+   * says *what* it prints; the binding says *where that lives in this
+   * particular data set*.
+   */
+  concept?: string;
+  /** Mutually exclusive with `const` and `concept`. */
   ref?: Reference;
   /** A literal value, for pre-printed text and fixed marks. */
   const?: string | number | boolean;
@@ -283,6 +314,28 @@ export interface Style {
   minSize?: number;
   /** Mark drawn in a checked checkbox. Default "X". */
   glyph?: string;
+}
+
+export interface ModelIdentity {
+  id: string;
+  version: SpecVersion;
+}
+
+/**
+ * Binds a canonical model's concepts to one data set's shape.
+ *
+ * Kept separate from the template because the two change for different
+ * reasons: a template changes when the *form* changes, a profile when the
+ * *data* changes. One form, several profiles is the normal case — a firm
+ * migrating its return model writes a new profile and every template follows.
+ */
+export interface BindingProfile {
+  $comment?: string;
+  profileVersion: SpecVersion;
+  /** Template id this profile is written for, or "*" for any. */
+  for: string;
+  model: ModelIdentity;
+  bindings: Record<string, ValueSpec>;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,161 @@
+{
+  "$comment": "Binds the canonical concepts to the alternative return shape. Nothing about the form changes: the same template, unedited, prints the same page from this.",
+  "profileVersion": "1.0.0",
+  "for": "us.irs.f1040sc.2025",
+  "model": {
+    "id": "us.tax.canonical",
+    "version": "1.0.0"
+  },
+  "bindings": {
+    "form.subject": {
+      "ref": "$.soleProprietorships[?(@.code == 'biz-1')]"
+    },
+    "taxpayer.name.full": {
+      "ref": "$.filer.displayName"
+    },
+    "taxpayer.identifier.ssn": {
+      "ref": "$.filer.taxId"
+    },
+    "business.principalActivity": {
+      "ref": "@.activity"
+    },
+    "business.activityCode": {
+      "ref": "@.naics"
+    },
+    "business.name": {
+      "ref": "@.legalName"
+    },
+    "business.identifier.ein": {
+      "ref": "@.fein",
+      "transform": [
+        "digitsOnly"
+      ]
+    },
+    "business.address.street": {
+      "ref": "@.premises.line1"
+    },
+    "business.address.cityStateZip": {
+      "ref": "@.premises.line2"
+    },
+    "business.accountingMethod": {
+      "ref": "@.basis"
+    },
+    "business.materialParticipation": {
+      "ref": "@.participatedMaterially"
+    },
+    "business.income.grossReceipts": {
+      "ref": "@.receipts.gross"
+    },
+    "business.income.returnsAndAllowances": {
+      "ref": "@.receipts.returns"
+    },
+    "business.income.netReceipts": {
+      "ref": "@.receipts.net"
+    },
+    "business.income.costOfGoodsSold": {
+      "ref": "@.receipts.costOfGoods"
+    },
+    "business.income.grossProfit": {
+      "ref": "@.receipts.profit"
+    },
+    "business.income.otherIncome": {
+      "ref": "@.receipts.other"
+    },
+    "business.income.grossIncome": {
+      "ref": "@.receipts.total"
+    },
+    "business.expense.advertising": {
+      "ref": "@.deductions.advertising"
+    },
+    "business.expense.carAndTruck": {
+      "ref": "@.deductions.carAndTruck"
+    },
+    "business.expense.commissionsAndFees": {
+      "ref": "@.deductions.commissionsAndFees"
+    },
+    "business.expense.contractLabor": {
+      "ref": "@.deductions.contractLabor"
+    },
+    "business.expense.depletion": {
+      "ref": "@.deductions.depletion"
+    },
+    "business.expense.depreciation": {
+      "ref": "@.deductions.depreciation"
+    },
+    "business.expense.employeeBenefits": {
+      "ref": "@.deductions.employeeBenefits"
+    },
+    "business.expense.insurance": {
+      "ref": "@.deductions.insurance"
+    },
+    "business.expense.mortgageInterest": {
+      "ref": "@.deductions.mortgageInterest"
+    },
+    "business.expense.otherInterest": {
+      "ref": "@.deductions.otherInterest"
+    },
+    "business.expense.legalAndProfessional": {
+      "ref": "@.deductions.legalAndProfessional"
+    },
+    "business.expense.officeExpense": {
+      "ref": "@.deductions.officeExpense"
+    },
+    "business.expense.pensionAndProfitSharing": {
+      "ref": "@.deductions.pensionAndProfitSharing"
+    },
+    "business.expense.rentVehicles": {
+      "ref": "@.deductions.rentVehicles"
+    },
+    "business.expense.rentProperty": {
+      "ref": "@.deductions.rentProperty"
+    },
+    "business.expense.repairs": {
+      "ref": "@.deductions.repairs"
+    },
+    "business.expense.supplies": {
+      "ref": "@.deductions.supplies"
+    },
+    "business.expense.taxesAndLicenses": {
+      "ref": "@.deductions.taxesAndLicenses"
+    },
+    "business.expense.travel": {
+      "ref": "@.deductions.travel"
+    },
+    "business.expense.meals": {
+      "ref": "@.deductions.meals"
+    },
+    "business.expense.utilities": {
+      "ref": "@.deductions.utilities"
+    },
+    "business.expense.wages": {
+      "ref": "@.deductions.wages"
+    },
+    "business.expense.energyEfficientBuildings": {
+      "ref": "@.deductions.energyEfficientBuildings"
+    },
+    "business.expense.otherItems": {
+      "ref": "@.miscDeductions"
+    },
+    "business.expense.otherItem.description": {
+      "ref": "@.label"
+    },
+    "business.expense.otherItem.amount": {
+      "ref": "@.value"
+    },
+    "business.expense.otherTotal": {
+      "ref": "@.rollup.miscTotal"
+    },
+    "business.expense.total": {
+      "ref": "@.rollup.deductionsTotal"
+    },
+    "business.expense.homeOffice": {
+      "ref": "@.rollup.homeOffice"
+    },
+    "business.profit.tentative": {
+      "ref": "@.rollup.profitBeforeHome"
+    },
+    "business.profit.net": {
+      "ref": "@.rollup.profitNet"
+    }
+  }
+}

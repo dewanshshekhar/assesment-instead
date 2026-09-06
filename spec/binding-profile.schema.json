@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://instead.example/schemas/tfas/1.0.0/binding-profile.schema.json",
+  "title": "Binding Profile",
+  "description": "Binds a canonical model's concepts to one data set's shape. A template describes the form; a profile describes where the values live.",
+  "type": "object",
+  "required": [
+    "profileVersion",
+    "for",
+    "model",
+    "bindings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$comment": {
+      "type": "string"
+    },
+    "profileVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "for": {
+      "type": "string",
+      "description": "Template id this profile applies to, or \"*\" for any."
+    },
+    "model": {
+      "$ref": "https://instead.example/schemas/tfas/1.0.0/annotation-template.schema.json#/$defs/modelIdentity"
+    },
+    "bindings": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "https://instead.example/schemas/tfas/1.0.0/annotation-template.schema.json#/$defs/conceptName"
+      },
+      "additionalProperties": {
+        "$ref": "https://instead.example/schemas/tfas/1.0.0/annotation-template.schema.json#/$defs/valueSpec"
+      }
+    }
+  }
+}
