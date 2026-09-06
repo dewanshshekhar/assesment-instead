@@ -1,4 +1,4 @@
-# Tax Form Annotation Specification (TFAS) v1.0.0
+# Tax Form Annotation Specification (TFAS)  
 
 A data structure for annotating the fields and boxes of a U.S. tax form, so
 that any application can print computed values into the right boxes using its
