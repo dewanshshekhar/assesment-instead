@@ -6,7 +6,7 @@ narrate the code.
 
 Have open before recording: `SPEC.md`, `templates/us.irs.f1040.2025.json`,
 `examples/sample-return.json`, `out/f1040-2025-filled.pdf`,
-`out/schedule-c-filled.pdf`, and a terminal in `tools/`.
+`out/schedule-c-2025-filled.pdf`, and a terminal in `tools/`.
 
 ---
 
@@ -83,7 +83,19 @@ Point at the SSN row, then the dependents block.
 > spilled *amounts* into a total, so the form's own arithmetic still
 > reconciles. Dropping entries silently is never the default.
 
-Briefly show `out/schedule-c-filled.pdf` page 1 and its statement page.
+Now show `out/schedule-c-2025-filled.pdf` — the official Schedule C.
+
+> Part II names twenty-four expense lines individually, so each one is bound by
+> a filter on the line number the engine assigned. Part V is the only repeating
+> region, and it runs down the page: same model, different step vector.
+>
+> And here is my favourite thing the real form taught me. Add up the eight
+> printed rows in Part V and you get 10,119. Line 48 says 10,120. Line 48 is
+> right — the IRS rule is to add the unrounded amounts and round only the
+> total. If the annotation layer computed its own totals, it would have printed
+> 10,119 on a filed return. That is the single best argument for the decision I
+> was about to describe anyway, and there is a test pinning the discrepancy so
+> nobody "fixes" it.
 
 ## 3:20 – 4:20 — The seam, and making it hold up
 
@@ -124,7 +136,7 @@ Point at the digest lines.
 npm test
 ```
 
-> Ninety tests. The interesting one asserts that the printed rows plus the
+> Ninety-one tests. The interesting one asserts that the printed rows plus the
 > carried-over total equal the figure the form reports on line 28 — nothing can
 > be lost in the overflow path.
 

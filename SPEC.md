@@ -403,6 +403,14 @@ validator MUST report a group in which more than one member can be marked.
 - Rounding MUST be performed on scaled integers, not by formatting a binary
   float. `2.675` at two decimals MUST produce `2.68`.
 
+Rounding composes badly, and the IRS rule is explicit about it: when a line is
+the sum of several amounts, add the **unrounded** amounts and round only the
+total. A specification that let templates compute totals would therefore print
+the wrong number — summing eight rounded rows on Schedule C, Part V of the
+worked example gives 10,119 where line 48 correctly reads 10,120. The template
+references a total the calculation engine produced from exact figures, which
+is the concrete reason for the non-goal in §1.2 and §5.6.
+
 ### 8.2 Percentages
 
 A `percentage` value is taken to be **already in percent units**: `12.5`
@@ -567,10 +575,10 @@ licensed fonts and its own colour management, without implementing any of
 ```jsonc
 {
   "planVersion": "1.0.0",
-  "templateId": "us.irs.f1040sc.2024",
+  "templateId": "us.irs.f1040sc.2025",
   "templateRevision": "2024-12",
   "taxYear": 2024,
-  "source":   { "filename": "f1040sc.pdf", "sha256": "2d69ea9e…", "pageCount": 1 },
+  "source":   { "filename": "f1040sc-2025.pdf", "sha256": "0bfce1b8…", "pageCount": 2 },
   "geometry": { "unit": "pt", "origin": "top-left", "pages": [ { "width": 612, "height": 792 } ] },
   "placements": [
     {

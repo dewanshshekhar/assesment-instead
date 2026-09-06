@@ -294,6 +294,13 @@ function checkAgainstData(template: AnnotationTemplate, data: Json, out: Diagnos
     if (inRepeat && ref.startsWith("@")) continue;
 
     try {
+      // This check exists to catch a mistyped path, not to report that a line
+      // is empty. A wildcard or filter is *expected* to match nothing for some
+      // returns -- a complete Schedule C template binds every named expense
+      // line, and any one taxpayer uses a handful of them -- so only a
+      // single-valued reference is worth warning about.
+      if (parseReference(ref).multi) continue;
+
       if (resolve(ref, { root: data, current: binding }).length === 0) {
         out.push({
           severity: "warning",

@@ -37,7 +37,7 @@ step and no transpiler config.
 ```bash
 npm install
 npm run demo      # fixtures, lint, render, compile a plan, check it, draw from it
-npm test          # 90 tests
+npm test          # 91 tests
 ```
 
 Or directly:
@@ -89,8 +89,8 @@ node --experimental-strip-types src/cli.ts render \
 | `acroform` | The catalog's AcroForm is intact. The normal case. |
 | `widgets` | The AcroForm entry is gone but the widget annotations survive. Copies of official forms that have been through a browser's print-to-PDF arrive like this — the catalog entry and the pages' `/Annots` arrays are dropped, leaving the widget dictionaries orphaned but complete, each still naming its page through `/P`. |
 
-The 2025 Form 1040 in `forms/` is a `widgets` case: 199 fields, fully
-recoverable, none of which anyone had to measure.
+Both official forms in `forms/` are `widgets` cases — 199 fields on Form 1040
+and 105 on Schedule C, fully recoverable, none of which anyone had to measure.
 
 A truly flat or scanned form still has to be measured by hand.
 
@@ -104,9 +104,10 @@ node --experimental-strip-types src/cli.ts inspect draft.json \
   --source ../forms/f1040-2025.pdf --out ../out/labelled.pdf
 ```
 
-prints each id inside its own box. Open it next to the blank form and read
-off which id belongs to which line. That is how the 2025 template was bound,
-and it is what caught a checkbox that had been mapped to the wrong line.
+prints each id inside its own box. Open it next to the blank form and read off
+which id belongs to which line. That is how both official templates were bound,
+and it is what caught a checkbox mapped to the wrong line and an EIN comb whose
+cell width was wrong.
 
 ## Conformance
 

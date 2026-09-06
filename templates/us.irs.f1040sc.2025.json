@@ -1,0 +1,1261 @@
+{
+  "specVersion": "1.0.0",
+  "template": {
+    "id": "us.irs.f1040sc.2025",
+    "title": "Schedule C (Form 1040) \u2014 Profit or Loss From Business (2025)",
+    "taxYear": 2025,
+    "revision": "2025",
+    "ombNumber": "1545-0074",
+    "source": {
+      "filename": "f1040sc-2025.pdf",
+      "sha256": "0bfce1b8ec5e87c7fe235db4e15a845f599753ca7dce280115b4195f3cbe2380",
+      "pageCount": 2
+    },
+    "geometry": {
+      "unit": "pt",
+      "origin": "top-left",
+      "pages": [
+        {
+          "width": 612,
+          "height": 792
+        },
+        {
+          "width": 612,
+          "height": 792
+        }
+      ]
+    }
+  },
+  "defaults": {
+    "style": {
+      "font": "Helvetica",
+      "size": 8,
+      "color": "#000000",
+      "align": "left",
+      "vAlign": "middle",
+      "padding": {
+        "left": 3,
+        "right": 4
+      },
+      "overflow": "shrink",
+      "minSize": 5
+    },
+    "format": {
+      "blankIfZero": true
+    }
+  },
+  "$comment": "Coordinates imported from the official PDF; ids and bindings assigned by hand. One Schedule C is filed per business, so the binding below selects which one this instance prints.",
+  "bind": {
+    "root": "$.taxReturn.schedules.scheduleC[?(@.id == 'biz-1')]"
+  },
+  "entries": [
+    {
+      "kind": "field",
+      "id": "sc.proprietor",
+      "label": "Name of proprietor  (f1_1[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        94,
+        409.65,
+        14
+      ],
+      "value": {
+        "ref": "$.taxReturn.taxpayer.fullName"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.ssn",
+      "label": "Social security number  (f1_2[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        446.4,
+        94,
+        129.6,
+        13
+      ],
+      "value": {
+        "ref": "$.taxReturn.taxpayer.identifiers.ssn"
+      },
+      "style": {
+        "font": "Courier",
+        "align": "center"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.principalBusiness",
+      "label": "A Principal business or profession  (f1_3[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        118,
+        408.4,
+        14
+      ],
+      "value": {
+        "ref": "@.principalBusiness"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.businessCode",
+      "label": "B Code from instructions  (f1_4[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        460.8,
+        120,
+        86.4,
+        11
+      ],
+      "value": {
+        "ref": "@.principalBusinessCode"
+      },
+      "style": {
+        "align": "center"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.businessName",
+      "label": "C Business name  (f1_5[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        36,
+        142,
+        409.65,
+        14
+      ],
+      "value": {
+        "ref": "@.businessName"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.ein",
+      "label": "D Employer ID number (EIN)  (f1_6[0])",
+      "page": 0,
+      "type": "comb",
+      "rect": [
+        446.4,
+        142,
+        129.6,
+        14
+      ],
+      "value": {
+        "ref": "@.identifiers.ein",
+        "transform": [
+          "digitsOnly"
+        ]
+      },
+      "style": {
+        "font": "Courier",
+        "align": "center"
+      },
+      "$comment": "Measured from the form: the box is 129.6pt across nine uniform 14.4pt cells. The hyphen is printed over the divider between the second and third cells, which is why that divider is absent -- it is not an extra slot. The PDF does not flag this field as a comb, so the layout is declared here.",
+      "comb": {
+        "cells": 9
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.address",
+      "label": "E Business address  (f1_7[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        230.4,
+        156,
+        345.6,
+        12
+      ],
+      "value": {
+        "ref": "@.businessAddress.street"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.cityStateZip",
+      "label": "E City, town or post office, state, and ZIP code  (f1_8[0])",
+      "page": 0,
+      "type": "text",
+      "rect": [
+        230.4,
+        168,
+        345.6,
+        12
+      ],
+      "value": {
+        "ref": "@.businessAddress.cityStateZip"
+      },
+      "$comment": "One box, three data fields. A template does no concatenation by design, so the engine supplies the assembled line."
+    },
+    {
+      "kind": "field",
+      "id": "sc.method.cash",
+      "label": "F Accounting method \u2014 Cash  (c1_1[0])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        168.8,
+        183,
+        8,
+        8
+      ],
+      "radioGroup": "accountingMethod",
+      "value": {
+        "ref": "@.accountingMethod",
+        "equals": "CASH"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.method.accrual",
+      "label": "F Accounting method \u2014 Accrual  (c1_1[1])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        233.6,
+        183,
+        8,
+        8
+      ],
+      "radioGroup": "accountingMethod",
+      "value": {
+        "ref": "@.accountingMethod",
+        "equals": "ACCRUAL"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.method.other",
+      "label": "F Accounting method \u2014 Other  (c1_1[2])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        305.6,
+        183,
+        8,
+        8
+      ],
+      "radioGroup": "accountingMethod",
+      "value": {
+        "ref": "@.accountingMethod",
+        "equals": "OTHER"
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.materiallyParticipated.yes",
+      "label": "G Materially participated \u2014 Yes  (c1_2[0])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        514.4,
+        194,
+        8,
+        8
+      ],
+      "radioGroup": "materiallyParticipated",
+      "value": {
+        "ref": "@.materiallyParticipated",
+        "equals": true
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.materiallyParticipated.no",
+      "label": "G Materially participated \u2014 No  (c1_2[1])",
+      "page": 0,
+      "type": "checkbox",
+      "rect": [
+        550.4,
+        194,
+        8,
+        8
+      ],
+      "radioGroup": "materiallyParticipated",
+      "value": {
+        "ref": "@.materiallyParticipated",
+        "equals": false
+      },
+      "style": {
+        "align": "center",
+        "size": 8
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line1",
+      "label": "1 Gross receipts or sales  (f1_10[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        264,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.grossReceipts"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line2",
+      "label": "2 Returns and allowances  (f1_11[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        276,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.returnsAndAllowances"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line3",
+      "label": "3 Subtract line 2 from line 1  (f1_12[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        288,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.netReceipts"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line4",
+      "label": "4 Cost of goods sold  (f1_13[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        300,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.costOfGoodsSold"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line5",
+      "label": "5 Gross profit  (f1_14[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        312,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.grossProfit"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line6",
+      "label": "6 Other income  (f1_15[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        324,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.otherIncome"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line7",
+      "label": "7 Gross income  (f1_16[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        336,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.income.grossIncome"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line8",
+      "label": "8 Advertising  (f1_17[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        360,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '8')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line9",
+      "label": "9 Car and truck expenses  (f1_18[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        384,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '9')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line10",
+      "label": "10 Commissions and fees  (f1_19[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        396,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '10')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line11",
+      "label": "11 Contract labor  (f1_20[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        408,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '11')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line12",
+      "label": "12 Depletion  (f1_21[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        420,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '12')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line13",
+      "label": "13 Depreciation and section 179  (f1_22[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        456,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '13')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line14",
+      "label": "14 Employee benefit programs  (f1_23[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        480,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '14')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line15",
+      "label": "15 Insurance (other than health)  (f1_24[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        492,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '15')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line16a",
+      "label": "16a Interest \u2014 mortgage  (f1_25[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        516,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '16a')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line16b",
+      "label": "16b Interest \u2014 other  (f1_26[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        528,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '16b')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line17",
+      "label": "17 Legal and professional services  (f1_27[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        194.4,
+        540,
+        100.05,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '17')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line18",
+      "label": "18 Office expense  (f1_28[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        360,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '18')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line19",
+      "label": "19 Pension and profit-sharing plans  (f1_29[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        372,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '19')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line20a",
+      "label": "20a Rent \u2014 vehicles, machinery, equipment  (f1_30[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        396,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '20a')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line20b",
+      "label": "20b Rent \u2014 other business property  (f1_31[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        408,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '20b')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line21",
+      "label": "21 Repairs and maintenance  (f1_32[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        420,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '21')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line22",
+      "label": "22 Supplies  (f1_33[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        432,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '22')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line23",
+      "label": "23 Taxes and licenses  (f1_34[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        444,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '23')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line24a",
+      "label": "24a Travel  (f1_35[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        468,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '24a')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line24b",
+      "label": "24b Deductible meals  (f1_36[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        480,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '24b')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line25",
+      "label": "25 Utilities  (f1_37[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        492,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '25')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line26",
+      "label": "26 Wages (less employment credits)  (f1_38[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        504,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '26')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line27a",
+      "label": "27a Energy efficient commercial buildings deduction  (f1_40[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        528,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.expenses[?(@.line == '27a')].amount",
+        "aggregate": "sum"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line27b",
+      "label": "27b Other expenses (from line 48)  (f1_39[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        540,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.totals.otherExpenses"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line28",
+      "label": "28 Total expenses  (f1_41[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        552,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.totals.totalExpenses"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line29",
+      "label": "29 Tentative profit or (loss)  (f1_42[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        564,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.tentativeProfit"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line30",
+      "label": "30 Expenses for business use of your home  (f1_45[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        624,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.homeOfficeDeduction"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line31",
+      "label": "31 Net profit or (loss)  (f1_46[0])",
+      "page": 0,
+      "type": "currency",
+      "rect": [
+        475.2,
+        660,
+        100.8,
+        12
+      ],
+      "value": {
+        "ref": "@.netProfit"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    },
+    {
+      "$comment": "Part V is the only repeating region on this form: expenses with no named line of their own. Nine ruled rows, running down the page.",
+      "kind": "repeat",
+      "id": "sc.partV.otherExpenses",
+      "label": "Part V \u2014 Other Expenses",
+      "page": 1,
+      "over": "@.otherExpenses",
+      "origin": [
+        36,
+        540
+      ],
+      "step": [
+        0,
+        24
+      ],
+      "capacity": 9,
+      "overflow": "continuation",
+      "continuation": {
+        "statementId": "stmt.scheduleC.otherExpenses",
+        "title": "Schedule C, Part V \u2014 additional other expenses"
+      },
+      "item": {
+        "fields": [
+          {
+            "kind": "field",
+            "id": "description",
+            "label": "Description",
+            "type": "text",
+            "rect": [
+              0,
+              0,
+              424.8,
+              12
+            ],
+            "value": {
+              "ref": "@.description"
+            }
+          },
+          {
+            "kind": "field",
+            "id": "amount",
+            "label": "Amount",
+            "type": "currency",
+            "rect": [
+              432,
+              0,
+              108,
+              12
+            ],
+            "value": {
+              "ref": "@.amount"
+            },
+            "format": {
+              "decimals": 0,
+              "negative": "parentheses",
+              "blankIfZero": true
+            },
+            "style": {
+              "align": "right"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "field",
+      "id": "sc.line48",
+      "label": "48 Total other expenses  (f2_33[0])",
+      "page": 1,
+      "type": "currency",
+      "rect": [
+        468,
+        744,
+        108,
+        12
+      ],
+      "value": {
+        "ref": "@.totals.otherExpenses"
+      },
+      "format": {
+        "decimals": 0,
+        "negative": "parentheses",
+        "blankIfZero": true
+      },
+      "style": {
+        "align": "right"
+      }
+    }
+  ]
+}

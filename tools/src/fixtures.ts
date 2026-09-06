@@ -1,13 +1,13 @@
 /**
- * Generates the two blank forms the example templates are measured against.
+ * Generates the blank fixture form one example template is measured against.
  *
- * The official IRS PDFs are not redistributed here, and this environment
- * cannot reach irs.gov, so the examples target forms whose geometry is known
- * exactly. That keeps the demo reproducible and keeps `source.sha256` in the
- * templates a real, checkable digest rather than a placeholder.
+ * The official 2025 forms in `forms/` cover everything the specification does
+ * except one thing: neither of them rules dollars and cents into separate
+ * columns. This fixture does, so the feature stays demonstrated. Generation is
+ * byte-reproducible, which keeps `source.sha256` a real, checkable digest.
  *
- * For a production template you would run `cli.ts import` against the
- * official PDF instead; see tools/README.md.
+ * For a production template you run `cli.ts import` against the official PDF
+ * instead; see tools/README.md.
  */
 
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
@@ -147,61 +147,6 @@ export async function buildForm1040(): Promise<Uint8Array> {
   box(ctx, 36, 716, 220, 16);
   label(ctx, 432, 706, "Date");
   box(ctx, 432, 716, 144, 16);
-
-  return doc.save();
-}
-
-export async function buildScheduleC(): Promise<Uint8Array> {
-  const doc = await PDFDocument.create();
-  doc.setTitle("Schedule C (fixture) — Profit or Loss From Business");
-  pinMetadata(doc);
-  const page = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
-  const ctx: Ctx = {
-    page,
-    font: await doc.embedFont(StandardFonts.Helvetica),
-    bold: await doc.embedFont(StandardFonts.HelveticaBold),
-  };
-
-  label(ctx, 36, 36, "SCHEDULE C", 14, true);
-  label(ctx, 130, 40, "Profit or Loss From Business (Sole Proprietorship)", 11, true);
-  label(ctx, 470, 40, "Tax year 2024", 9);
-  label(ctx, 36, 60, "Layout fixture for the annotation specification examples.", 7);
-
-  label(ctx, 36, 78, "Name of proprietor");
-  box(ctx, 36, 88, 340, 16);
-  label(ctx, 400, 78, "Social security number");
-  comb(ctx, 400, 88, 144, 16, 9, { 3: 8, 5: 8 });
-
-  label(ctx, 36, 112, "A   Principal business or profession");
-  box(ctx, 36, 122, 330, 16);
-  label(ctx, 36, 146, "C   Business name");
-  box(ctx, 36, 156, 330, 16);
-  label(ctx, 400, 146, "D   Employer ID number (EIN)");
-  comb(ctx, 400, 156, 144, 16, 9, { 2: 10 });
-
-  label(ctx, 36, 188, "F   Accounting method:", 8);
-  box(ctx, 130, 187, 10, 10);
-  label(ctx, 144, 189, "Cash");
-  box(ctx, 180, 187, 10, 10);
-  label(ctx, 194, 189, "Accrual");
-
-  label(ctx, 36, 216, "Part I    Income", 10, true);
-  amountLine(ctx, 240, "1    Gross receipts or sales");
-  amountLine(ctx, 262, "2    Returns and allowances");
-  amountLine(ctx, 284, "3    Subtract line 2 from line 1");
-  amountLine(ctx, 306, "7    Gross income");
-
-  label(ctx, 36, 336, "Part II   Expenses", 10, true);
-  label(ctx, 36, 350, "Category", 7);
-  label(ctx, 462, 350, "Amount", 7);
-  for (let row = 0; row < 9; row += 1) {
-    const y = 360 + row * 18;
-    box(ctx, 36, y, 300, 14);
-    box(ctx, 462, y, 92, 14);
-  }
-
-  amountLine(ctx, 540, "28   Total expenses");
-  amountLine(ctx, 566, "31   Net profit or (loss). Subtract line 28 from line 7");
 
   return doc.save();
 }

@@ -12,7 +12,7 @@ const read = <T,>(p: string): T => JSON.parse(readFileSync(resolvePath(HERE, p),
 
 const data = read<Json>("../../examples/sample-return.json");
 const form1040 = read<AnnotationTemplate>("../../templates/us.irs.f1040.2024.json");
-const scheduleC = read<AnnotationTemplate>("../../templates/us.irs.f1040sc.2024.json");
+const scheduleC = read<AnnotationTemplate>("../../templates/us.irs.f1040sc.2025.json");
 
 const textOf = (plan: ReturnType<typeof buildPlan>, id: string) =>
   plan.placements.find((p) => p.fieldId === id)?.text;
@@ -36,8 +36,8 @@ test("aggregates across a nested array onto a single line", () => {
 
 test("sums the net profit of every Schedule C onto Form 1040", () => {
   const plan = buildPlan(form1040, data);
-  assert.equal(textOf(plan, "p1.line8"), "48806");
-  assert.equal(textOf(plan, "p1.line8#cents"), "95");
+  assert.equal(textOf(plan, "p1.line8"), "38687");
+  assert.equal(textOf(plan, "p1.line8#cents"), "40");
 });
 
 test("marks exactly one member of a radio group", () => {
@@ -85,39 +85,61 @@ test("prints one item per element and gives every placement a distinct id", () =
   const ids = plan.placements.map((p) => p.fieldId);
   assert.equal(new Set(ids).size, ids.length, "placement ids must be unique");
 
-  assert.equal(textOf(plan, "sc.partII.expenses[0].category"), "Advertising");
-  assert.equal(textOf(plan, "sc.partII.expenses[0].amount"), "4200.00");
-  assert.equal(textOf(plan, "sc.partII.expenses[7].category"), "Rent — vehicles and equipment");
+  assert.equal(textOf(plan, "sc.partV.otherExpenses[0].description"), "Bank and merchant service fees");
+  assert.equal(textOf(plan, "sc.partV.otherExpenses[0].amount"), "640");
+  assert.equal(textOf(plan, "sc.partV.otherExpenses[7].description"), "Business gifts");
 });
 
 test("collapses the entries that do not fit and reports them on a statement", () => {
   const plan = buildPlan(scheduleC, data);
 
-  // The form provides 9 rows for 12 expenses: 8 print, 4 are carried over.
-  assert.equal(plan.placements.filter((p) => /expenses\[\d+\]\.category$/.test(p.fieldId)).length, 8);
-  assert.equal(textOf(plan, "sc.partII.expenses.overflow.amount"), "34146.75");
-  assert.match(String(textOf(plan, "sc.partII.expenses.overflow.category")), /^See attached:/);
+  // Part V provides 9 rows for 11 other expenses: 8 print, 3 are carried over.
+  assert.equal(plan.placements.filter((p) => /otherExpenses\[\d+\]\.description$/.test(p.fieldId)).length, 8);
+  assert.equal(textOf(plan, "sc.partV.otherExpenses.overflow.amount"), "2942");
+  assert.match(String(textOf(plan, "sc.partV.otherExpenses.overflow.description")), /^See attached:/);
 
   assert.equal(plan.statements.length, 1);
   const [statement] = plan.statements;
-  assert.equal(statement.sourceEntryId, "sc.partII.expenses");
-  assert.deepEqual(statement.columns, ["Category", "Amount"]);
-  assert.equal(statement.rows.length, 4);
-  assert.deepEqual(statement.rows[0], ["Rent — other business property", "24000.00"]);
+  assert.equal(statement.sourceEntryId, "sc.partV.otherExpenses");
+  assert.deepEqual(statement.columns, ["Description", "Amount"]);
+  assert.equal(statement.rows.length, 3);
+  assert.deepEqual(statement.rows[0], ["Field equipment calibration", "540"]);
 
-  // Nothing may be lost: the printed rows plus the carried total must equal
-  // the figure the form itself reports on line 28.
+  // Nothing may be lost: every element is either printed or carried.
+  const printedRows = plan.placements.filter((p) => /otherExpenses\[\d+\]\.amount$/.test(p.fieldId));
+  const carriedRows = statement.rows.length;
+  const elements = (data as any).taxReturn.schedules.scheduleC[0].otherExpenses.length;
+  assert.equal(printedRows.length + carriedRows, elements);
+});
+
+test("whole-dollar rounding is applied to the total, not to the parts", () => {
+  const plan = buildPlan(scheduleC, data);
+
+  // The eight printed rows and the carried remainder are each rounded, and
+  // adding those rounded figures gives 10,119 -- one dollar less than line 48.
   const printed = plan.placements
-    .filter((p) => /expenses\[\d+\]\.amount$/.test(p.fieldId))
+    .filter((p) => /otherExpenses\[\d+\]\.amount$/.test(p.fieldId))
     .reduce((sum, p) => sum + Number(p.text), 0);
-  const carried = Number(textOf(plan, "sc.partII.expenses.overflow.amount"));
-  assert.equal((printed + carried).toFixed(2), "85213.05");
+  const carried = Number(textOf(plan, "sc.partV.otherExpenses.overflow.amount"));
+  assert.equal(printed + carried, 10119);
+
+  // Line 48 says 10,120, and that is the correct figure: the IRS rule is to
+  // add the unrounded amounts and round only the total. The engine did that
+  // and the template merely referenced the result.
+  assert.equal(textOf(plan, "sc.line48"), "10120");
+
+  // This is precisely why a template must not compute its own totals. Had the
+  // annotation layer summed the rounded rows, it would have printed 10,119 on
+  // a filed return.
+  const exact = (data as any).taxReturn.schedules.scheduleC[0].otherExpenses
+    .reduce((sum: number, e: any) => sum + e.amount, 0);
+  assert.equal(Math.round(exact), 10120);
 });
 
 test("reports rather than throws when an item cannot be evaluated", () => {
   const broken = structuredClone(scheduleC);
   const repeat = broken.entries.find((e) => e.kind === "repeat") as any;
-  repeat.item.fields[1].value = { ref: "@.category", aggregate: "sum" };
+  repeat.item.fields[1].value = { ref: "@.description", aggregate: "sum" };
 
   const plan = buildPlan(broken, data);
   assert.ok(plan.diagnostics.length > 0);
@@ -177,7 +199,7 @@ test("official-form money lines round to whole dollars", () => {
   const plan = buildPlan(form2025, data);
 
   assert.equal(textOf(plan, "p1.line1a"), "97251", "97,250.50 rounds half away from zero");
-  assert.equal(textOf(plan, "p1.line9"), "148345");
-  assert.equal(textOf(plan, "p1.line11a"), "144845");
+  assert.equal(textOf(plan, "p1.line9"), "138225");
+  assert.equal(textOf(plan, "p1.line11a"), "134725");
   assert.equal(textOf(plan, "p1.line2a"), undefined, "a zero amount leaves the line blank");
 });

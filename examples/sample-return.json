@@ -17,7 +17,8 @@
         "unit": "Apt 4B",
         "city": "Providence",
         "state": "RI",
-        "postalCode": "02906"
+        "postalCode": "02906",
+        "cityStateZip": "Providence, RI 02906"
       }
     },
     "spouse": {
@@ -99,7 +100,9 @@
             "returnsAndAllowances": 2150.0,
             "netReceipts": 126250.0,
             "costOfGoodsSold": 0,
-            "grossIncome": 126250.0
+            "grossIncome": 126250.0,
+            "grossProfit": 126250.0,
+            "otherIncome": 0
           },
           "expenses": [
             {
@@ -164,9 +167,64 @@
             }
           ],
           "totals": {
-            "totalExpenses": 85213.05
+            "namedExpenses": 85213.05,
+            "otherExpenses": 10119.55,
+            "totalExpenses": 95332.6
           },
-          "netProfit": 41036.95
+          "netProfit": 30917.4,
+          "otherExpenses": [
+            {
+              "description": "Bank and merchant service fees",
+              "amount": 640.2
+            },
+            {
+              "description": "Engineering software subscriptions",
+              "amount": 3180.0
+            },
+            {
+              "description": "Professional association dues",
+              "amount": 450.0
+            },
+            {
+              "description": "Continuing education and seminars",
+              "amount": 1250.0
+            },
+            {
+              "description": "Postage and courier",
+              "amount": 318.45
+            },
+            {
+              "description": "Reference standards and codes",
+              "amount": 875.0
+            },
+            {
+              "description": "Website hosting and domains",
+              "amount": 288.6
+            },
+            {
+              "description": "Business gifts",
+              "amount": 175.0
+            },
+            {
+              "description": "Field equipment calibration",
+              "amount": 540.0
+            },
+            {
+              "description": "Printing and reprographics",
+              "amount": 962.3
+            },
+            {
+              "description": "Telephone and internet",
+              "amount": 1440.0
+            }
+          ],
+          "principalBusinessCode": "541330",
+          "businessAddress": {
+            "street": "1180 Calder Avenue",
+            "cityStateZip": "Providence, RI 02906"
+          },
+          "homeOfficeDeduction": 0,
+          "tentativeProfit": 30917.4
         },
         {
           "id": "biz-2",
@@ -182,7 +240,9 @@
             "returnsAndAllowances": 0,
             "netReceipts": 9800.0,
             "costOfGoodsSold": 0,
-            "grossIncome": 9800.0
+            "grossIncome": 9800.0,
+            "grossProfit": 9800.0,
+            "otherIncome": 0
           },
           "expenses": [
             {
@@ -202,9 +262,19 @@
             }
           ],
           "totals": {
+            "namedExpenses": 2030.0,
+            "otherExpenses": 0,
             "totalExpenses": 2030.0
           },
-          "netProfit": 7770.0
+          "netProfit": 7770.0,
+          "otherExpenses": [],
+          "principalBusinessCode": "327110",
+          "businessAddress": {
+            "street": "1180 Calder Avenue",
+            "cityStateZip": "Providence, RI 02906"
+          },
+          "homeOfficeDeduction": 0,
+          "tentativeProfit": 7770.0
         }
       ]
     },
@@ -213,8 +283,8 @@
     },
     "totals": {
       "totalWages": 97250.5,
-      "totalIncome": 148344.63,
-      "adjustedGrossIncome": 144844.63
+      "totalIncome": 138225.08,
+      "adjustedGrossIncome": 134725.08
     }
   }
 }
