@@ -1,0 +1,15 @@
+# The conformance goldens are compared against text this repository generates,
+# and the generator always writes LF. Checking them out as CRLF on Windows
+# makes `conformance:update` rewrite the whole file for no reason, and made the
+# comparison fail until the runner started normalising on read.
+#
+# Pinning the checkout is the other half of that fix: normalise on read so a
+# stale checkout still passes, and pin here so it never happens again.
+*.json    text eol=lf
+*.ts      text eol=lf
+*.md      text eol=lf
+*.html    text eol=lf
+
+# Never touched by line-ending conversion.
+*.pdf     binary
+*.png     binary
