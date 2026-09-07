@@ -30,163 +30,184 @@ phone. Close Slack and notifications.
 
 ---
 
-## 0:00 – 0:30 · What this is
+## The script
 
-*Show: the repository root.*
-
-> A tax form is fixed paper with ruled boxes. A return is a deeply nested data
-> structure. Something has to connect the two — and the brief says someone else
-> builds the printing app with their own code.
->
-> So the deliverable is a **specification**. `SPEC.md` is normative, there are
-> three JSON Schemas, and everything under `tools/` is supporting material,
-> including a renderer that exists only to prove the spec is implementable.
+Read it straight through. `[ ]` lines are what you do; everything else is what
+you say, word for word.
 
 ---
 
-## 0:30 – 1:10 · Positioning and formatting, on a real form
+### 0:00 — Opening
 
-*Show: `out/schedule-c-2025-filled.pdf` page 1, full screen. Point at the EIN, then the money column.*
+**[Screen: the repository root.]**
 
-> The official 2025 Schedule C, filled from a sample return. I typed no
-> coordinates — the importer read them out of the PDF's own fields.
->
-> Every field is a **rectangle**, not a point: x, y, width, height in points,
-> top-left origin, with alignment and padding. A point cannot say
-> "right-aligned against the cents rule" or "centred in this square".
->
-> The EIN is a **comb** — one character per ruled cell, width derived from the
-> box. Money is whole dollars, losses in parentheses, and a zero line stays
-> blank. On a tax form, blank and zero are not the same thing.
+Hi, I'm Dewansh. This is my submission for the Instead technical test.
+
+The brief says someone else builds the printing application, in their own code.
+So what I built is a specification, not a renderer.
+
+`SPEC.md` is normative, with three JSON Schemas; everything under `tools/` only
+exists to prove it can be implemented.
 
 ---
 
-## 1:10 – 2:00 · Reaching into the nested data
+### 0:25 — Positioning and formatting
 
-*Show: `examples/sample-return.json` beside the template. Point at a named expense line.*
+**[Open `out/schedule-c-2025-filled.pdf`, page 1, full screen.]**
 
-> Canonical form is **RFC 6901 JSON Pointer** — a standard anyone can
-> implement. On top, a small JSONPath subset for the two things a pointer
-> cannot do: wildcards and filters.
->
-> Part II names twenty-four expense lines, so each filters the return by its
-> IRS line number. A reference selecting more than one node **requires** an
-> explicit aggregate — silently taking the first of two W-2s is how a wrong
-> number reaches a filed return.
+The official 2025 Schedule C, filled from a sample return. I didn't type a
+single coordinate — the importer read them out of the PDF's own form fields.
 
-*Scroll to `bindings`. Then run `npm run render:alt`.*
+Every field is a rectangle, not a point: x, y, width, height in points,
+top-left origin, plus alignment and padding. A point can't say "right-aligned
+against the cents rule" — which is exactly what a form needs.
 
-> One level up: a field names a **concept**, not a path. `bindings` is the only
-> place this template touches data shape.
->
-> Same template, unedited. A completely different return shape, only the
-> binding profile swapped — and the output is **byte-identical**.
+**[Point at the EIN box, then the money column.]**
+
+The EIN is a comb field — one character per ruled cell. Money is whole dollars,
+losses print in parentheses, and a zero line stays blank: on a tax form, blank
+and zero don't mean the same thing.
 
 ---
 
-## 2:00 – 2:50 · Scope: what real forms do
+### 1:10 — Referencing a nested value
 
-*Show: `out/f1040-2025-filled.pdf`, the dependents block.*
+**[Open `examples/sample-return.json` beside the template.]**
 
-> These four dependents are **columns**, not rows. My first repeat model had a
-> `rowHeight`, which cannot describe that. It is a step **vector** now:
-> dependents are 108 across, Part V is 24 down.
+Now, reaching into a deeply nested return.
 
-*Show: Schedule C page 1 bottom, then page 3. Point at Part V, then line 48.*
+**[Point at a named expense line in the template.]**
 
-> Eleven other-expenses, nine rows. Eight print, the ninth carries the spilled
-> total so the form's arithmetic reconciles, and the rest go on a continuation
-> statement.
->
-> And my favourite thing the form taught me. Add the printed rows and the
-> carry-over: **ten thousand one hundred nineteen**. Line 48 says **twenty**.
-> Line 48 is right — the IRS rule is to add unrounded amounts and round only
-> the total. A template computing its own totals would have printed the wrong
-> number on a filed return. A test pins that discrepancy so nobody "fixes" it.
+The canonical form is RFC 6901 JSON Pointer, a standard anyone can implement.
+On top of that, a small JSONPath subset for the two things a pointer can't do:
+wildcards and filters. That's how each of Part Two's twenty-four expense lines
+finds its own line in the return.
 
----
+And a reference that selects more than one node must say how to aggregate them,
+or it's an error. Silently taking the first of two W-2s is how a wrong number
+reaches a filed return.
 
-## 2:50 – 3:35 · The seam someone else plugs into
+**[Scroll to `bindings` at the top of the template.]**
 
-*Terminal: `npm run plan && npm run check-plan`. Then open `out/browser-demo.html` and toggle "Show placement boxes".*
+One level up, a field names a concept, not a path — and this block is the only
+place the template knows the data's shape.
 
-> A template compiles to a **render plan**: every value resolved, formatted and
-> placed, each placement carrying its own font, alignment, padding and overflow
-> policy. It omits font metrics, because those belong to whoever draws.
->
-> Here is the proof rather than the claim. This page is a **second
-> implementation** — plain JavaScript, no library, sharing no code with my
-> renderer. It reads that plan and fills the same form.
->
-> The first version got this wrong: my renderer reached back into the template
-> for padding, which made the claim false. There is now a test that reads the
-> renderer's source and fails if it mentions templates.
+**[Terminal: `npm run render:alt`]**
+
+Same template, unedited. A completely different return shape. I swapped only
+the binding profile — byte-identical output.
 
 ---
 
-## 3:35 – 4:15 · Making it hold up
+### 2:05 — What real forms actually do
 
-*Terminal: `npm test`. Then open `out/annotation-editor.html`, click a box, nudge with arrows.*
+**[Open `out/f1040-2025-filled.pdf`, dependents block.]**
 
-> Ninety-nine tests. Golden render plans asserted byte-for-byte, and
-> byte-reproducible output.
->
-> Every template pins the **SHA-256** of the PDF its coordinates came from.
-> Forms get reissued and can move every box a few points while looking
-> identical — with the digest that is one build failure instead of a whole
-> filing run printed slightly wrong.
->
-> Annotating is not JSON editing: drag, nudge by a point, shift-drag to draw a
-> box the PDF never declared. And the form I was handed had its AcroForm
-> stripped by a browser print-to-PDF — the importer falls back to the surviving
-> widgets and recovered all 199 fields.
+Form 1040. These four dependents are columns, not rows — the fields run down
+inside one dependent, and the next dependent moves right. My first repeat model
+had a row height, which can't describe that. It's a step vector now: a hundred
+and eight across here, twenty-four down in Part Five.
+
+**[Schedule C page 1, bottom. Then page 3.]**
+
+Eleven other-expenses, nine rows. Eight print, the ninth carries the spilled
+total, and the rest go to a continuation statement.
+
+**[Point at Part V, then line 48.]**
+
+My favourite thing the real form taught me. Add the printed rows and the
+carry-over: ten thousand one hundred nineteen. Line 48 says ten thousand one
+hundred twenty.
+
+Line 48 is right. The IRS rule is to add the unrounded amounts and round only
+the total. A layer that computed its own totals would have printed the wrong
+number on a filed return. A test pins that difference so nobody "fixes" it.
 
 ---
 
-## 4:15 – 5:00 · Decisions, and what is next
+### 3:05 — The seam someone else plugs into
 
-> The decision I would defend hardest: **no expression language**. A field
-> cannot say `sum(wages) minus adjustments`. Tax logic belongs in the engine
-> that also feeds e-filing; if this layer computed totals too, the two would
-> disagree — and line 48 is what that looks like in practice.
->
-> Everything fails loudly by default: text that does not fit, rows that do not
-> fit, a digest that does not match.
->
-> One limitation. Form 1040 prints an "if more than four dependents" check that
-> is not a fillable field, so I left it unbound rather than guess a rectangle —
-> an X on the wrong line is worse than no X. I know that because the inspector
-> caught me binding it to the wrong box.
->
-> Next: template inheritance across tax years, and a published conformance
-> corpus so a third-party renderer can self-certify.
+**[Terminal: `npm run plan && npm run check-plan`]**
+
+A template compiles to a render plan: every value resolved, formatted and
+placed, each placement carrying its own font, alignment, padding and overflow
+policy — so a consumer never reads the template at all.
+
+**[Open `out/browser-demo.html`. Toggle "Show placement boxes".]**
+
+Here's the proof. This page is a second implementation — plain JavaScript, no
+library, sharing no code with my renderer. It reads that plan and fills the
+same form.
+
+I'll be honest: the first version got this wrong — my renderer reached back
+into the template for padding, which made the whole claim false. There's now a
+test that fails if the renderer's source even mentions templates.
+
+---
+
+### 3:45 — Making it hold up
+
+**[Terminal: `npm test`]**
+
+Ninety-nine tests. Golden render plans asserted byte for byte, and the output
+is byte-reproducible.
+
+Every template pins the SHA-256 of the PDF its coordinates came from. Forms get
+reissued mid-season with boxes moved a few points. The digest turns that into
+one build failure instead of a filing run printed wrong.
+
+**[Open `out/annotation-editor.html`. Click a box, nudge with arrow keys.]**
+
+And annotating isn't JSON editing — drag to move, arrow keys nudge a point at a
+time, shift-drag draws a box the PDF never declared.
+
+---
+
+### 4:20 — Decisions, and what's next
+
+**[Screen: `DECISIONS.md`.]**
+
+The decision I'd defend hardest: no expression language. A field cannot say
+"sum of wages minus adjustments". Tax logic belongs in the calculation engine —
+the same one that feeds e-filing. If this layer computed totals too, the two
+would eventually disagree — and line 48 is what that looks like.
+
+One limitation, plainly: the 1040's "more than four dependents" checkbox isn't
+a fillable field in that PDF, so I left it unbound. An X on the wrong line is
+worse than no X.
+
+Next would be template inheritance across tax years, and a conformance corpus
+third-party renderers can certify against.
+
+Thanks for watching.
 
 ---
 
 ## Pace, honestly
 
-The spoken script is **754 words**. That is 5:02 at a brisk 150 words a
-minute, and about 5:25 at a comfortable pace — so it only fits if you keep
-moving. Do not slow down to sound thoughtful; the brief says max five minutes
-and an overrun is the first thing a reviewer notices.
+The spoken script is **706 words** — 4:42 at 150 words a minute, a little over
+five minutes at a relaxed 140. So it fits, but only if you keep moving. Do not
+slow down to sound thoughtful; the brief says max five minutes and an overrun
+is the first thing a reviewer notices.
 
-**Checkpoints.** Glance at the timer at each section change:
+**Checkpoints.** These are the measured section starts. Glance at the timer at
+each one:
 
 | By | You should be | If you are behind |
 |----|---------------|-------------------|
-| 0:30 | starting the filled Schedule C | skip "three JSON Schemas" |
-| 1:10 | opening the sample return | skip the padding clause |
-| 2:00 | on the 1040 dependents block | cut "unedited" and the profile aside |
-| 2:50 | running `npm run plan` | drop the continuation sentence, keep line 48 |
-| 3:35 | running `npm test` | drop the annotation-editor beat entirely |
-| 4:15 | on decisions | drop the AcroForm-recovery sentence |
+| 0:25 | on the filled Schedule C | skip "three JSON Schemas" |
+| 1:10 | opening the sample return | skip the comb sentence |
+| 2:05 | on the 1040 dependents block | cut "unedited" and the profile aside |
+| 3:05 | running `npm run plan` | drop the continuation sentence, keep line 48 |
+| 3:45 | running `npm test` | drop the annotation-editor beat |
+| 4:20 | on decisions | drop the digest paragraph |
 
-**The three sentences to drop first**, in order — each is a clean cut that
-leaves no dangling reference:
+**The three things to drop first**, in order — each is a clean cut that leaves
+no dangling reference:
 
-1. The annotation-editor paragraph at 3:50 (repo shows it)
-2. The AcroForm-recovery sentence at 4:05
-3. The digest paragraph at 3:45
+1. The annotation-editor paragraph at 4:05 (the repo shows it anyway)
+2. The digest paragraph at 3:50
+3. The "one limitation" paragraph at 4:45
 
 **Never cut:** line 48 and the rounding rule, the second implementation, and
 "the first version got this wrong". Those three are what separate this from a
@@ -197,6 +218,9 @@ feature tour.
 - Open `SPEC.md` §11 and show the render plan shape
 - `npm run lint` — three templates, zero errors, zero warnings
 - Show `conformance/plans/` and say what a golden plan is for
+- Mention the AcroForm recovery: the 1040 I was given had its form dictionary
+  stripped by a browser print-to-PDF, and the importer fell back to the raw
+  widgets to recover all one hundred and ninety-nine fields
 
 ## Recording notes
 
@@ -223,5 +247,8 @@ feature tour.
   meaning. It cannot say which nested value belongs in a box, how to format a
   loss, or what to do with a twelfth expense. And on this form it was not even
   intact.
+- **Did you guess any coordinates?** Only where the PDF gave none. The EIN comb
+  and the business-code box were measured off the rasterised blank form, not
+  eyeballed — nine uniform cells, no gap.
 - **What breaks first at scale?** Hand-measuring boxes for flat or scanned
   forms. The editor helps; a form rasterised to an image has nothing to recover.
