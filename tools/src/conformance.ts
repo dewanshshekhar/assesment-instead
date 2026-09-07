@@ -71,5 +71,7 @@ export function serialise(plan: RenderPlan): string {
 }
 
 export async function readGolden(testCase: Case): Promise<string> {
-  return readFile(path(testCase.golden), "utf8");
+  const content = await readFile(path(testCase.golden), "utf8");
+  return content.replace(/\r\n/g, "\n");
 }
+
